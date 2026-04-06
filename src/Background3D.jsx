@@ -1,13 +1,6 @@
 import React, { useRef, useMemo } from 'react';
-import { Canvas, useFrame, extend } from '@react-three/fiber';
-import { 
-  MeshTransmissionMaterial, 
-  MeshWobbleMaterial, 
-  Float, 
-  PerspectiveCamera, 
-  Points, 
-  PointMaterial 
-} from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { Float, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -15,8 +8,7 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Explicitly extend the materials to ensure R3F recognizes the tags
-extend({ MeshTransmissionMaterial, MeshWobbleMaterial, PointMaterial });
+// No "extend" block needed at all. We are using 100% native engine components.
 
 const ParticleField = ({ count = 500, color = '#3b82f6', random = true }) => {
   const points = useMemo(() => {
@@ -30,9 +22,8 @@ const ParticleField = ({ count = 500, color = '#3b82f6', random = true }) => {
   }, [count, random]);
 
   return (
-    <Points>
+    <points>
       <bufferGeometry>
-        {/* FIX: Using the absolute standard bufferAttribute tag */}
         <bufferAttribute 
           attach="attributes-position" 
           count={count} 
@@ -40,9 +31,9 @@ const ParticleField = ({ count = 500, color = '#3b82f6', random = true }) => {
           itemSize={3} 
         />
       </bufferGeometry>
-      {/* FIX: PointMaterial must be lowercase after extend */}
-      <pointMaterial size={0.07} color={color} transparent opacity={0.4} depthWrite={false} />
-    </Points>
+      {/* NATIVE pointsMaterial (with an 's'). Never crashes. */}
+      <pointsMaterial size={0.07} color={color} transparent opacity={0.4} depthWrite={false} />
+    </points>
   );
 };
 
@@ -84,7 +75,7 @@ const JourneyScene = () => {
           <Float speed={3}>
             <mesh>
               <sphereGeometry args={[1.5, 64, 64]} />
-              <meshWobbleMaterial color="#3b82f6" factor={0.6} speed={2} />
+              <meshStandardMaterial color="#3b82f6" wireframe />
             </mesh>
           </Float>
           <ParticleField count={800} color="#2dd4bf" random={false} />
@@ -94,7 +85,15 @@ const JourneyScene = () => {
         <group position={[0, 0, -60]}>
           <mesh>
             <icosahedronGeometry args={[3, 1]} />
-            <meshTransmissionMaterial thickness={1} color="#2dd4bf" />
+            {/* NATIVE meshPhysicalMaterial for glass. No extending required. */}
+            <meshPhysicalMaterial 
+              transmission={1} 
+              opacity={1} 
+              transparent 
+              roughness={0.1} 
+              thickness={2} 
+              color="#2dd4bf" 
+            />
           </mesh>
         </group>
 
@@ -114,9 +113,8 @@ const JourneyScene = () => {
 
 export default function Background3D() {
   return (
-    <div className="fixed inset-0 -z-10">
-      <Canvas dpr={[1, 2]}>
-        <color attach="background" args={['#050505']} />
+    <div className="fixed inset-0 -z-10 bg-[#050505]">
+      <Canvas dpr={[1, 2]} gl={{ antialias: false, powerPreference: "high-performance" }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
         <JourneyScene />
