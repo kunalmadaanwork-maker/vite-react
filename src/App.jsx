@@ -1,8 +1,8 @@
 // File 1: App.jsx
 import React from 'react';
 import { ReactLenis } from '@studio-freight/react-lenis';
-import Background3D from './Background3D';
-import OverlayUI from './OverlayUI';
+import Background3D from './Background3D.jsx';
+import OverlayUI from './OverlayUI.jsx';
 import './index.css';
 
 export default function App() {
