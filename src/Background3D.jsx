@@ -1,102 +1,159 @@
-import React, { useRef } from 'react';
+// File 2: Background3D.jsx
+import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame, extend } from '@react-three/fiber';
-import { shaderMaterial } from '@react-three/drei';
+import { 
+  MeshTransmissionMaterial, 
+  MeshWobbleMaterial, 
+  Float, 
+  PerspectiveCamera, 
+  Points, 
+  PointMaterial 
+} from '@react-three/drei';
 import * as THREE from 'three';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 
-// 1. Define the shader material
-const DataCoreMaterial = shaderMaterial(
-  {
-    uTime: 0,
-    uColor1: new THREE.Color('#2dd4bf'), // Teal
-    uColor2: new THREE.Color('#3b82f6'), // Blue
+gsap.registerPlugin(ScrollTrigger);
+
+// Custom Glowing Material for "FSD Bricks"
+const GlowMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime: { value: 0 },
+    uColor: { value: new THREE.Color('#2dd4bf') },
   },
-  // Vertex Shader: Breathing effect via sine displacement
-  `
-  varying vec2 vUv;
-  varying float vDistortion;
-  uniform float uTime;
-  
-  void main() {
-    vUv = uv;
-    // Create a breathing pulse based on vertex position and time
-    float distortion = sin(position.y * 2.0 + uTime) * 0.15;
-    vDistortion = distortion;
-    
-    vec3 newPosition = position + normal * distortion;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-  }
-  `,
-  // Fragment Shader: Glowing tech aesthetic
-  `
-  varying vec2 vUv;
-  varying float vDistortion;
-  uniform float uTime;
-  uniform vec3 uColor1;
-  uniform vec3 uColor2;
-
-  void main() {
-    // Mix colors based on distortion and time
-    float mixFactor = vDistortion * 5.0 + 0.5 * sin(uTime * 0.5);
-    vec3 finalColor = mix(uColor1, uColor2, clamp(mixFactor, 0.0, 1.0));
-    
-    // Add a subtle glow based on distance from center (approximate)
-    float glow = 0.8 + 0.2 * sin(uTime + vUv.x * 10.0);
-    
-    gl_FragColor = vec4(finalColor * glow, 0.85);
-  }
-  `
-);
-
-// 2. Register the material to React Three Fiber's native elements
-extend({ DataCoreMaterial });
-
-const DataCore = () => {
-  const meshRef = useRef();
-
-  useFrame((state) => {
-    const { clock, pointer } = state;
-    const t = clock.getElapsedTime();
-
-    // Safely update shader time if material is ready
-    if (meshRef.current && meshRef.current.material) {
-        meshRef.current.material.uTime = t;
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
+  `,
+  fragmentShader: `
+    varying vec2 vUv;
+    uniform float uTime;
+    uniform vec3 uColor;
+    void main() {
+      float pulse = 0.5 + 0.5 * sin(uTime * 2.0);
+      gl_FragColor = vec4(uColor * pulse, 1.0);
+    }
+  `,
+});
 
-    // Smooth rotation reacting to mouse position
-    meshRef.current.rotation.x = THREE.MathUtils.lerp(
-      meshRef.current.rotation.x, 
-      pointer.y * 0.5, 
-      0.05
-    );
-    meshRef.current.rotation.y = THREE.MathUtils.lerp(
-      meshRef.current.rotation.y, 
-      pointer.x * 0.5, 
-      0.05
-    );
-    
-    // Constant slow spin
-    meshRef.current.rotation.z += 0.002;
-  });
+// Critical: Lowercase tag registration
+extend({ GlowMaterial });
+
+const ParticleField = ({ count = 500, color = '#3b82f6', random = true }) => {
+  const points = useMemo(() => {
+    const p = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      p[i * 3] = random ? (Math.random() - 0.5) * 10 : 0;
+      p[i * 3 + 1] = random ? (Math.random() - 0.5) * 10 : i * 0.1;
+      p[i * 3 + 2] = random ? (Math.random() - 0.5) * 10 : 0;
+    }
+    return p;
+  }, [count, random]);
 
   return (
-    <mesh ref={meshRef}>
-      <icosahedronGeometry args={[1.5, 16]} />
-      {/* 3. Must be lowercase 'd' after extending! */}
-      <dataCoreMaterial transparent wireframe />
-    </mesh>
+    <Points>
+      <bufferGeometry>
+        <float32Attribute attach="attributes-position" args={[points]} />
+      </bufferGeometry>
+      <pointMaterial size={0.02} color={color} transparent opacity={0.6} />
+    </Points>
+  );
+};
+
+const JourneyScene = () => {
+  const cameraRef = useRef();
+  const groupRef = useRef();
+
+  useGSAP(() => {
+    // Link ScrollY to Camera Z-position
+    gsap.to(cameraRef.current.position, {
+      z: -60, 
+      ease: 'none',
+      scrollTrigger: {
+        trigger: 'body',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1,
+      },
+    });
+  }, []);
+
+  return (
+    <>
+      <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 5]} />
+      
+      <group ref={groupRef}>
+        {/* Scene 1: Manual Writer (Hero) */}
+        <group position={[0, 0, 0]}>
+          <Float speed={2} rotationIntensity={1} floatIntensity={1}>
+            <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 4]}>
+              <cylinderGeometry args={[0.05, 0.02, 2]} />
+              <meshStandardMaterial color="#ffffff" />
+            </mesh>
+          </Float>
+          <ParticleField count={1000} color="#ffffff" random={true} />
+        </group>
+
+        {/* Scene 2: Collaboration (Gemma Core) */}
+        <group position={[0, 0, -20]}>
+          <Float speed={5} floatIntensity={2}>
+            <mesh>
+              <sphereGeometry args={[1, 64, 64]} />
+              <MeshWobbleMaterial color="#3b82f6" factor={0.4} speed={2} />
+            </mesh>
+          </Float>
+          <ParticleField count={800} color="#2dd4bf" random={false} />
+        </group>
+
+        {/* Scene 3: The Factory (Amazon Q Vault) */}
+        <group position={[0, 0, -40]}>
+          <mesh>
+            <icosahedronGeometry args={[2, 2]} />
+            <MeshTransmissionMaterial 
+              thickness={0.5} 
+              roughness={0.1} 
+              transmission={1} 
+              color="#2dd4bf" 
+            />
+          </mesh>
+          {/* Guardrail Rings */}
+          {[1, 1.5, 2].map((scale, i) => (
+            <mesh key={i} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[scale, 0.02, 16, 100]} />
+              <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={2} />
+            </mesh>
+          ))}
+        </group>
+
+        {/* Scene 4: The Output (FSD Bricks) */}
+        <group position={[0, 0, -60]}>
+          {Array.from({ length: 12 }).map((_, i) => (
+            <mesh 
+              key={i} 
+              position={[ (i % 3) * 1.5 - 1.5, Math.floor(i / 3) * 1.5 - 2, 0]}
+            >
+              <boxGeometry args={[1, 0.1, 1.2]} />
+              <glowMaterial uColor={new THREE.Color('#2dd4bf')} />
+            </mesh>
+          ))}
+        </group>
+      </group>
+    </>
   );
 };
 
 export default function Background3D() {
   return (
-    <Canvas 
-      camera={{ position: [0, 0, 4], fov: 75 }} 
-      dpr={[1, 2]}
-    >
+    <Canvas dpr={[1, 2]}>
       <color attach="background" args={['#050505']} />
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.4} />
       <pointLight position={[10, 10, 10]} intensity={1} />
-      <DataCore />
+      <spotLight position={[-10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
+      <JourneyScene />
     </Canvas>
   );
 }
