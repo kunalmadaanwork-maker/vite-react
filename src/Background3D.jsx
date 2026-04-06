@@ -47,8 +47,6 @@ const DataCoreMaterial = shaderMaterial(
   `
 );
 
-DataCoreMaterial.preload();
-
 const DataCore = () => {
   const meshRef = useRef();
   
