@@ -16,6 +16,7 @@
     "@react-three/fiber": "^8.15.12",
     "@react-three/drei": "^9.96.1",
     "gsap": "^3.12.5",
+    "@gsap/react": "^2.1.0",
     "@studio-freight/react-lenis": "^0.0.46"
   },
   "devDependencies": {
