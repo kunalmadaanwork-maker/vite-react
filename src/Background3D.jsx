@@ -1,9 +1,9 @@
-// File 2: Background3D.jsx
-import React, { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useRef } from 'react';
+import { Canvas, useFrame, extend } from '@react-three/fiber';
 import { shaderMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
+// 1. Define the shader material
 const DataCoreMaterial = shaderMaterial(
   {
     uTime: 0,
@@ -47,19 +47,20 @@ const DataCoreMaterial = shaderMaterial(
   `
 );
 
+// 2. Register the material to React Three Fiber's native elements
+extend({ DataCoreMaterial });
+
 const DataCore = () => {
   const meshRef = useRef();
-  
-  // Pre-allocate objects outside useFrame to prevent memory leaks
-  const rotationX = 0;
-  const rotationY = 0;
 
   useFrame((state) => {
     const { clock, pointer } = state;
     const t = clock.getElapsedTime();
 
-    // Update shader time
-    meshRef.current.material.uTime = t;
+    // Safely update shader time if material is ready
+    if (meshRef.current && meshRef.current.material) {
+        meshRef.current.material.uTime = t;
+    }
 
     // Smooth rotation reacting to mouse position
     meshRef.current.rotation.x = THREE.MathUtils.lerp(
@@ -80,7 +81,8 @@ const DataCore = () => {
   return (
     <mesh ref={meshRef}>
       <icosahedronGeometry args={[1.5, 16]} />
-      <DataCoreMaterial transparent wireframe />
+      {/* 3. Must be lowercase 'd' after extending! */}
+      <dataCoreMaterial transparent wireframe />
     </mesh>
   );
 };
