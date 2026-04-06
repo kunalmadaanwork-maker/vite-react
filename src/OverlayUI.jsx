@@ -127,4 +127,18 @@ export default function OverlayUI() {
               <div className="text-2xl md:text-3xl font-bold text-teal-400">80%</div>
               <div className="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest mt-1">Structure Match</div>
             </div>
-            <div className="p-4 md:p-6 rounded-2xl bg-black/40 border border-white/
+            <div className="p-4 md:p-6 rounded-2xl bg-black/40 border border-white/5 text-center">
+              <div className="text-2xl md:text-3xl font-bold text-white">70%</div>
+              <div className="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest mt-1">Time Saved</div>
+            </div>
+          </div>
+          <p className="text-zinc-300 text-base md:text-lg leading-relaxed mt-4">
+            The result: An automated pipeline that preserves technical precision while 
+            drastically accelerating Agile velocity.
+          </p>
+        </section>
+
+      </main>
+    </div>
+  );
+}
