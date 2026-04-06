@@ -113,7 +113,7 @@ const JourneyScene = () => {
 
 export default function Background3D() {
   return (
-    <div className="fixed inset-0 -z-10 bg-[#050505]">
+    <div className="fixed inset-0 bg-[#050505]">
       <Canvas dpr={[1, 2]} gl={{ antialias: false, powerPreference: "high-performance" }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
