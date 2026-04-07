@@ -144,15 +144,16 @@ export default function OverlayUI({ theme, setTheme }) {
             </div>
           </div>
 
+          {/* FIXED: Replaced magenta with fuchsia so it actually renders in Tailwind */}
           <div className="node-right self-end w-full md:w-[48%] dynamic-card p-10 rounded-3xl md:text-right group relative overflow-hidden reveal">
             <div className="group-hover:opacity-0 transition-opacity duration-300">
-              <span className="text-magenta-500 font-mono text-xs font-bold uppercase tracking-widest">Insurance ML POC</span>
+              <span className="text-fuchsia-500 font-mono text-xs font-bold uppercase tracking-widest">Insurance ML POC</span>
               <h3 className={`${textPrimary} text-3xl font-bold mt-2 mb-4`}>Claims Fraud MVP</h3>
               <p className={`${textSecondary} leading-relaxed`}>Automated manual fraud detection by mapping high-risk indicators to predictive model architectures.</p>
             </div>
             
-            <div className="absolute inset-0 bg-magenta-900/95 backdrop-blur-3xl p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center text-white text-left">
-              <h4 className="font-bold mb-2 font-mono text-xs uppercase tracking-widest text-magenta-300">PnC Insurance Logic:</h4>
+            <div className="absolute inset-0 bg-fuchsia-900/95 backdrop-blur-3xl p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center text-white text-left">
+              <h4 className="font-bold mb-2 font-mono text-xs uppercase tracking-widest text-fuchsia-300">PnC Insurance Logic:</h4>
               <p className="text-xs leading-relaxed">Collaborated with Data Science teams to feature-engineer indicators for anomaly detection models.</p>
             </div>
           </div>
@@ -169,9 +170,9 @@ export default function OverlayUI({ theme, setTheme }) {
               </div>
             </div>
             <div className="group relative">
-              {/* FIXED: Exact 1:1 structural copy of Gemma 4 button, just swapped to magenta */}
-              <span className="px-5 py-2 rounded-full bg-magenta-500/10 border border-magenta-500/30 text-magenta-500 text-xs font-bold uppercase cursor-help transition-all hover:bg-magenta-500/20">n8n Automation</span>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-magenta-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-[10px] text-zinc-300 p-4 leading-relaxed">
+              {/* FIXED: Replaced magenta with fuchsia for valid Tailwind compilation */}
+              <span className="px-5 py-2 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/30 text-fuchsia-500 text-xs font-bold uppercase cursor-help transition-all hover:bg-fuchsia-500/20">n8n Automation</span>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-fuchsia-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-[10px] text-zinc-300 p-4 leading-relaxed">
                 Prototyping automated data-parsing pipelines to replace manual SQL reconciliation tasks.
               </div>
             </div>
@@ -189,7 +190,7 @@ export default function OverlayUI({ theme, setTheme }) {
             <button onClick={copyEmail} className={`p-6 rounded-2xl border transition-all font-bold text-lg ${copied ? 'bg-violet-500/20 border-violet-500 text-violet-400' : `dynamic-card border-transparent ${textPrimary}`}`}>
               {copied ? "Copied Email!" : "Copy Email"}
             </button>
-            <a href="/kunal-madaan.pdf" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl ${isDark ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]' : 'bg-slate-900 text-white shadow-[0_0_30px_rgba(0,0,0,0.1)]'} font-bold text-lg`}>Full Resume</a>
+            <a href="./kunal-madaan.pdf" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl ${isDark ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]' : 'bg-slate-900 text-white shadow-[0_0_30px_rgba(0,0,0,0.1)]'} font-bold text-lg`}>Full Resume</a>
           </div>
         </section>
 
