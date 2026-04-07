@@ -190,7 +190,7 @@ export default function OverlayUI({ theme, setTheme }) {
             <button onClick={copyEmail} className={`p-6 rounded-2xl border transition-all font-bold text-lg ${copied ? 'bg-violet-500/20 border-violet-500 text-violet-400' : `dynamic-card border-transparent ${textPrimary}`}`}>
               {copied ? "Copied Email!" : "Copy Email"}
             </button>
-            <a href="./kunal-madaan.pdf" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl ${isDark ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]' : 'bg-slate-900 text-white shadow-[0_0_30px_rgba(0,0,0,0.1)]'} font-bold text-lg`}>Full Resume</a>
+            <a href="/kunal-madaan.pdf" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl ${isDark ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]' : 'bg-slate-900 text-white shadow-[0_0_30px_rgba(0,0,0,0.1)]'} font-bold text-lg`}>Full Resume</a>
           </div>
         </section>
 
