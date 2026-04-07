@@ -1,6 +1,7 @@
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { MeshTransmissionMaterial, Float, PerspectiveCamera } from '@react-three/drei';
+import * as THREE from 'three';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -72,42 +73,53 @@ const NebulaGlow = ({ isDark }) => {
   );
 };
 
-// THE FIX: New Asteroid Belt off to the left side
+// THE FIX: True 3D Asteroid Belt stretching down the Z-Axis
 const AsteroidBelt = ({ isDark }) => {
-  const beltRef = useRef();
-  const count = 300;
+  const meshRef = useRef();
+  const count = 150; 
+  const dummy = useMemo(() => new THREE.Object3D(), []);
   
-  const points = useMemo(() => {
-    const p = new Float32Array(count * 3);
+  const particles = useMemo(() => {
+    const temp = [];
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 3 + Math.random() * 2;
-      p[i * 3] = Math.cos(angle) * radius; 
-      p[i * 3 + 1] = (Math.random() - 0.5) * 0.8; 
-      p[i * 3 + 2] = Math.sin(angle) * radius; 
+      // Pushed to the far left, stretched from Z=20 all the way to Z=-150
+      const x = -14 + (Math.random() - 0.5) * 6;
+      const y = (Math.random() - 0.5) * 30;
+      const z = 20 - Math.random() * 170; 
+      
+      // Random sizes to give that realistic chunky look
+      const scale = Math.random() * 0.8 + 0.2; 
+      const rx = Math.random() * 0.02;
+      const ry = Math.random() * 0.02;
+      temp.push({ x, y, z, scale, rx, ry });
     }
-    return p;
-  }, []);
+    return temp;
+  }, [count]);
 
   useFrame(() => {
-    beltRef.current.rotation.y += 0.0015;
-    beltRef.current.rotation.z += 0.0005;
+    const time = Date.now() * 0.0005;
+    particles.forEach((particle, i) => {
+      // Gentle floating and spinning
+      dummy.position.set(particle.x, particle.y + Math.sin(time + i)*0.5, particle.z);
+      dummy.rotation.set(time * particle.rx * 50, time * particle.ry * 50, 0);
+      dummy.scale.set(particle.scale, particle.scale, particle.scale);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    });
+    meshRef.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
-    <group ref={beltRef} position={[-8, 2, -15]} rotation={[0.4, 0, 0.2]}>
-      <points>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" count={points.length / 3} array={points} itemSize={3} />
-        </bufferGeometry>
-        <pointsMaterial 
-          size={0.06} 
-          color={isDark ? "#a78bfa" : "#475569"} 
-          transparent 
-          opacity={isDark ? 0.8 : 0.6} 
-        />
-      </points>
-    </group>
+    <instancedMesh ref={meshRef} args={[null, null, count]}>
+      {/* Dodecahedrons look like real, jagged space rocks */}
+      <dodecahedronGeometry args={[0.5, 0]} />
+      <meshPhysicalMaterial 
+        color={isDark ? "#8b5cf6" : "#94a3b8"} 
+        roughness={0.9} 
+        transparent 
+        opacity={isDark ? 0.4 : 0.6} 
+      />
+    </instancedMesh>
   );
 };
 
@@ -117,7 +129,7 @@ const JourneyObjects = ({ isDark }) => {
 
   return (
     <group>
-      {/* THE FIX: Replaced the center line with the Asteroid Belt */}
+      {/* REPLACED THE CENTER LINE WITH THE ASTEROID BELT */}
       <AsteroidBelt isDark={isDark} />
 
       <Float position={[4, -1, -30]} speed={3}>
