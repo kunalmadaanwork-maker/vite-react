@@ -16,19 +16,20 @@ export default function OverlayUI() {
   };
 
   useGSAP(() => {
-    // Left-aligned nodes slide in from the left
-    gsap.utils.toArray('.node-left').forEach((section) => {
-      gsap.fromTo(section, 
-        { opacity: 0, x: -100 }, 
-        { opacity: 1, x: 0, scrollTrigger: { trigger: section, start: 'top 80%', end: 'top 30%', scrub: 1 } }
-      );
-    });
-
-    // Right-aligned nodes slide in from the right
-    gsap.utils.toArray('.node-right').forEach((section) => {
-      gsap.fromTo(section, 
-        { opacity: 0, x: 100 }, 
-        { opacity: 1, x: 0, scrollTrigger: { trigger: section, start: 'top 80%', end: 'top 30%', scrub: 1 } }
+    const nodes = gsap.utils.toArray('.story-node');
+    nodes.forEach((node) => {
+      gsap.fromTo(node, 
+        { opacity: 0, y: 50 }, 
+        { 
+          opacity: 1, 
+          y: 0, 
+          scrollTrigger: {
+            trigger: node,
+            start: 'top 80%',
+            end: 'top 20%',
+            scrub: true,
+          }
+        }
       );
     });
   });
@@ -37,8 +38,8 @@ export default function OverlayUI() {
     <div className="w-full flex flex-col items-center">
       <style>{`
         .glass-nav {
-            background: rgba(5, 5, 5, 0.8);
-            backdrop-filter: blur(12px);
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
         .pipeline-flow {
@@ -50,92 +51,118 @@ export default function OverlayUI() {
             0% { background-position: 100% 0; }
             100% { background-position: -100% 0; }
         }
-        .glass-card {
-            background: rgba(15, 15, 15, 0.6);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
       `}</style>
 
       <nav className="sticky top-0 z-50 w-full flex justify-center glass-nav">
         <div className="w-full max-w-6xl flex justify-between items-center py-4 px-6 md:px-8">
-          <div className="flex items-center gap-3">
-            <div className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse"></div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Kunal Madaan</h1>
-          </div>
-          <div className="flex gap-6 items-center">
-            <a href="YOUR_LINKEDIN_URL" target="_blank" rel="noreferrer" className="text-zinc-400 hover:text-white transition-colors text-sm font-medium">LinkedIn</a>
-            <button 
-              onClick={copyEmail} 
-              className={`transition-colors text-sm font-medium cursor-pointer ${copied ? 'text-teal-400' : 'text-zinc-400 hover:text-white'}`}
-            >
-              {copied ? "Copied!" : "Copy Email"}
-            </button>
+          <div className="text-white font-bold tracking-tighter text-lg">KM // ARCHITECT</div>
+          <div className="flex gap-8 items-center">
+            {['Identity', 'Journey', 'Archive', 'Horizon'].map((item) => (
+              <a key={item} href={`#${item.toLowerCase()}`} className="text-zinc-400 hover:text-white transition-colors text-xs font-medium uppercase tracking-widest">
+                {item}
+              </a>
+            ))}
+            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 cursor-pointer hover:bg-zinc-700 transition-colors" />
           </div>
         </div>
       </nav>
 
-      {/* Expanded max-width so the left/right layout has room to breathe */}
-      <main className="w-full max-w-6xl flex flex-col gap-[60vh] p-6 md:p-8 pt-40 pb-96">
+      <main className="w-full max-w-4xl flex flex-col gap-[70vh] p-6 md:p-8 pt-40 pb-96">
         
-        {/* Story Node 1: Manual (Left Aligned) */}
-        <section className="node-left glass-card self-start w-full md:w-[45%] p-8 md:p-10 rounded-3xl flex flex-col items-start gap-4">
-          <span className="text-teal-400 font-mono text-xs tracking-widest uppercase">Stage 01 // Manual Intake</span>
-          <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-            The Chaos of <br /> Raw Intent.
+        {/* Section 1: Identity */}
+        <section id="identity" className="story-node flex flex-col items-start gap-6">
+          <span className="text-teal-400 font-mono text-xs tracking-widest uppercase">The Foundation</span>
+          <h2 className="text-5xl md:text-7xl font-bold text-white leading-tight">
+            Bridging the Gap <br /> Between Data & Value.
           </h2>
-          <p className="text-zinc-300 text-base md:text-lg leading-relaxed">
-            Legacy BSA workflows relied on fragmented emails and chaotic meetings. 
-            The "Manual Writer" phase was a bottleneck of ambiguity and misalignment.
+          <p className="text-zinc-400 text-xl max-w-2xl leading-relaxed">
+            7+ years as a Techno-Functional Senior BSA, specializing in transforming complex enterprise chaos into 
+            high-velocity engineering roadmaps.
           </p>
         </section>
 
-        {/* Story Node 2: Collaboration (Right Aligned) */}
-        <section className="node-right glass-card self-end w-full md:w-[45%] p-8 md:p-10 rounded-3xl flex flex-col items-end text-right gap-4">
-          <span className="text-blue-400 font-mono text-xs tracking-widest uppercase">Stage 02 // Intelligence Sync</span>
-          <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-            Bridging the <br /> Knowledge Gap.
-          </h2>
-          <p className="text-zinc-300 text-base md:text-lg leading-relaxed">
-            By integrating <span className="text-white font-semibold">Enterprise Copilots</span>, we transformed 
-            raw data into structured intent, creating a seamless bridge between stakeholders and engineering.
-          </p>
-          <div className="w-full h-1 pipeline-flow rounded-full mt-4"></div>
-        </section>
-
-        {/* Story Node 3: Factory (Left Aligned) */}
-        <section className="node-left glass-card self-start w-full md:w-[45%] p-8 md:p-10 rounded-3xl flex flex-col items-start gap-4">
-          <span className="text-teal-400 font-mono text-xs tracking-widest uppercase">Stage 03 // The Vault</span>
-          <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-            Amazon Q <br /> Knowledge Base.
-          </h2>
-          <p className="text-zinc-300 text-base md:text-lg leading-relaxed">
-            Implementing strict <span className="text-white font-semibold">Guardrails</span> ensures zero-hallucination. 
-            The Vault syncs enterprise documentation to output high-fidelity requirements.
-          </p>
-        </section>
-
-        {/* Story Node 4: Output (Right Aligned) */}
-        <section className="node-right glass-card self-end w-full md:w-[45%] p-8 md:p-10 rounded-3xl flex flex-col items-end text-right gap-4">
-          <span className="text-blue-400 font-mono text-xs tracking-widest uppercase">Stage 04 // Precision Output</span>
-          <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight">
-            Structured <br /> FSD Delivery.
-          </h2>
-          <div className="flex gap-4 md:gap-6 mt-4 justify-end w-full">
-            <div className="p-4 md:p-6 rounded-2xl bg-black/40 border border-white/5 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-teal-400">80%</div>
-              <div className="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest mt-1">Structure Match</div>
+        {/* Section 2: Signature Journey (AI Factory) */}
+        <section id="journey" className="story-node flex flex-col items-start gap-12">
+          <span className="text-blue-400 font-mono text-xs tracking-widest uppercase">The AI FSD Factory</span>
+          <div className="flex flex-col gap-20 w-full">
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="w-full md:w-1/2 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <h3 className="text-white font-bold text-xl mb-2">01. Manual Intake</h3>
+                <p className="text-zinc-400 text-sm">Fragmented requirements and raw stakeholder intent. The bottleneck of legacy BSA work.</p>
+              </div>
+              <div className="hidden md:block w-12 h-px bg-teal-500/30 mt-10" />
+              <div className="w-full md:w-1/2 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <h3 className="text-white font-bold text-xl mb-2">02. Copilot Sync</h3>
+                <p className="text-zinc-400 text-sm">Leveraging Enterprise LLMs to extract structured intent from raw data streams.</p>
+              </div>
             </div>
-            <div className="p-4 md:p-6 rounded-2xl bg-black/40 border border-white/5 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white">70%</div>
-              <div className="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest mt-1">Time Saved</div>
+            <div className="flex flex-col md:flex-row-reverse gap-8 items-start">
+              <div className="w-full md:w-1/2 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <h3 className="text-white font-bold text-xl mb-2">03. The Vault</h3>
+                <p className="text-zinc-400 text-sm">Amazon Q Knowledge Base with strict guardrails for a Tier-1 Financial Institution.</p>
+              </div>
+              <div className="hidden md:block w-12 h-px bg-teal-500/30 mt-10" />
+              <div className="w-full md:w-1/2 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <h3 className="text-white font-bold text-xl mb-2">04. Precision Output</h3>
+                <p className="text-zinc-400 text-sm">80% structure match and 70% time saved on FSD generation.</p>
+              </div>
             </div>
           </div>
-          <p className="text-zinc-300 text-base md:text-lg leading-relaxed mt-4">
-            The result: An automated pipeline that preserves technical precision while 
-            drastically accelerating Agile velocity.
-          </p>
+          <div className="w-full h-1 pipeline-flow rounded-full" />
+        </section>
+
+        {/* Section 3: Impact Archive */}
+        <section id="archive" className="story-node flex flex-col items-start gap-8">
+          <span className="text-teal-400 font-mono text-xs tracking-widest uppercase">Impact Archive</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <div className="p-8 rounded-3xl bg-zinc-900/50 border border-white/5 hover:border-teal-500/30 transition-colors group">
+              <h4 className="text-white font-bold text-xl mb-2 group-hover:text-teal-400 transition-colors">NTT DATA ML POC</h4>
+              <p className="text-zinc-400 text-sm">Engineered the functional blueprint for an ML-driven fraud detection system in insurance.</p>
+            </div>
+            <div className="p-8 rounded-3xl bg-zinc-900/50 border border-white/5 hover:border-blue-500/30 transition-colors group">
+              <h4 className="text-white font-bold text-xl mb-2 group-hover:text-blue-400 transition-colors">Tableau Migration</h4>
+              <p className="text-zinc-400 text-sm">Directed end-to-end reporting migration from Business Objects for a Tier-1 North American Bank.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 4: Technical Horizon */}
+        <section id="horizon" className="story-node flex flex-col items-start gap-6">
+          <span className="text-blue-400 font-mono text-xs tracking-widest uppercase">Technical Horizon</span>
+          <div className="p-10 rounded-3xl bg-gradient-to-br from-zinc-900 to-black border border-white/10 w-full">
+            <h3 className="text-2xl font-bold text-white mb-4">R&D Sandbox</h3>
+            <div className="flex flex-wrap gap-4">
+              <div className="px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-mono">Google Gemma 4</div>
+              <div className="px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono">n8n Automation</div>
+              <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-zinc-400 text-xs font-mono">Agentic Workflows</div>
+            </div>
+            <p className="text-zinc-500 text-sm mt-6 max-w-xl italic">
+              Currently evaluating open-weight edge models for offline Agile User Story generation.
+            </p>
+          </div>
+        </section>
+
+        {/* Section 5: Contact Hub */}
+        <section className="story-node flex flex-col items-center text-center gap-10">
+          <div className="px-4 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+            [STATUS: Currently Leading AI Transformation]
+          </div>
+          <h2 className="text-4xl md:text-6xl font-bold text-white">Ready for the next <br /> frontier?</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
+            <a href="YOUR_LINKEDIN_URL" className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white font-medium">
+              LinkedIn
+            </a>
+            <button 
+              onClick={copyEmail} 
+              className={`p-6 rounded-2xl border transition-all font-medium ${copied ? 'bg-teal-500/20 border-teal-500 text-teal-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
+            >
+              {copied ? "Copied Email!" : "Copy Email"}
+            </button>
+            <a href="RESUME_LINK" className="p-6 rounded-2xl bg-white text-black hover:bg-zinc-200 transition-all font-bold">
+              Full Case Study
+            </a>
+          </div>
         </section>
 
       </main>
