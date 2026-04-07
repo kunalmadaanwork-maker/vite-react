@@ -169,7 +169,7 @@ export default function OverlayUI({ theme, setTheme }) {
               </div>
             </div>
             <div className="group relative">
-              {/* Perfectly matched styling structure, just swapping violet for magenta */}
+              {/* FIXED: Exact 1:1 structural copy of Gemma 4 button, just swapped to magenta */}
               <span className="px-5 py-2 rounded-full bg-magenta-500/10 border border-magenta-500/30 text-magenta-500 text-xs font-bold uppercase cursor-help transition-all hover:bg-magenta-500/20">n8n Automation</span>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-magenta-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-[10px] text-zinc-300 p-4 leading-relaxed">
                 Prototyping automated data-parsing pipelines to replace manual SQL reconciliation tasks.
