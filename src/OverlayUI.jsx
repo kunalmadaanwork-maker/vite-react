@@ -16,7 +16,6 @@ export default function OverlayUI({ theme, setTheme }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // THE FIX: Maximum contrast enforced for Light Mode
   const textPrimary = isDark ? "text-white" : "text-black";
   const textSecondary = isDark ? "text-zinc-400" : "text-slate-800";
   const glassNav = isDark ? "rgba(5, 5, 5, 0.85)" : "rgba(255, 255, 255, 0.85)";
@@ -25,7 +24,17 @@ export default function OverlayUI({ theme, setTheme }) {
 
   useGSAP(() => {
     gsap.utils.toArray('.reveal').forEach((el) => {
-      gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, scrollTrigger: { trigger: el, start: 'top 90%', scrub: 1 } });
+      // THE FIX: Removed 'scrub' so cards hit 100% opacity instantly and stay there.
+      gsap.fromTo(el, 
+        { opacity: 0, y: 40 }, 
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 1,
+          ease: "power3.out",
+          scrollTrigger: { trigger: el, start: 'top 85%' } 
+        }
+      );
     });
   });
 
@@ -50,7 +59,8 @@ export default function OverlayUI({ theme, setTheme }) {
           <div className={`${textPrimary} font-black tracking-tighter text-xl uppercase`}>Kunal Madaan</div>
           
           <div className="hidden md:flex gap-6 items-center">
-            {['Identity', 'AI Journey', 'Archive', 'Horizon'].map((item) => (
+            {/* THE FIX: Removed 'Archive' from nav to fix broken link */}
+            {['Identity', 'AI Journey', 'Horizon'].map((item) => (
               <a key={item} href={`#${item.toLowerCase().replace(' ', '')}`} className={`${textSecondary} hover:${textPrimary} transition-colors text-xs font-bold uppercase tracking-widest`}>
                 {item}
               </a>
@@ -78,7 +88,8 @@ export default function OverlayUI({ theme, setTheme }) {
 
       {/* MOBILE MENU */}
       <div className={`fixed inset-0 z-40 ${isDark ? 'bg-[#030303]/95' : 'bg-[#FFF8E7]/95'} backdrop-blur-3xl flex flex-col items-center justify-center gap-8 transition-all duration-500 ${isMenuOpen ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none -translate-y-10'}`}>
-        {['Identity', 'AI Journey', 'Archive', 'Horizon'].map((item) => (
+        {/* THE FIX: Removed 'Archive' from mobile nav */}
+        {['Identity', 'AI Journey', 'Horizon'].map((item) => (
           <a key={item} href={`#${item.toLowerCase().replace(' ', '')}`} onClick={() => setIsMenuOpen(false)} className={`${textPrimary} text-2xl font-black uppercase tracking-widest`}>
             {item}
           </a>
@@ -89,7 +100,7 @@ export default function OverlayUI({ theme, setTheme }) {
       <main className="w-full max-w-6xl flex flex-col px-6 md:px-12 pt-40 pb-60">
         
         {/* SECTION 1: IDENTITY */}
-        <section id="identity" className="flex flex-col gap-12 mb-[40vh]">
+        <section id="identity" className="flex flex-col gap-12 mb-[40vh] reveal">
           <div className="flex flex-col items-center text-center gap-6">
             <span className={`${isDark ? 'text-violet-400' : 'text-violet-700'} font-mono text-sm tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA</span>
             <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} leading-tight tracking-tight`}>Bridging Data <br />To Enterprise Value.</h2>
@@ -97,7 +108,6 @@ export default function OverlayUI({ theme, setTheme }) {
               7+ years of experience bridging enterprise architecture and Agile delivery. Certified Scrum Master (CSM®) and Product Owner (CSPO®).
             </p>
             
-            {/* THE FIX: High Contrast Certificates for Light Mode */}
             <div className="flex flex-wrap justify-center gap-4 mt-6">
               <span className={`px-5 py-2.5 rounded-xl border ${isDark ? 'border-violet-500/30 bg-violet-500/10 text-violet-300' : 'border-violet-600/40 bg-violet-600/15 text-violet-900'} text-xs font-bold tracking-widest flex items-center gap-2 shadow-[0_0_15px_rgba(124,58,237,0.1)]`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> CSM® & CSPO®
@@ -197,7 +207,6 @@ export default function OverlayUI({ theme, setTheme }) {
           <h3 className={`text-3xl font-black ${textPrimary} mb-8`}>Generative AI R&D Sandbox</h3>
           <div className="flex flex-wrap justify-center gap-6 mb-12">
             
-            {/* THE FIX: High Contrast Horizon Tags for Light Mode */}
             <div className="group relative">
               <span className={`px-6 py-3 rounded-full border text-sm font-bold uppercase cursor-help transition-all ${isDark ? 'bg-violet-500/10 border-violet-500/30 text-violet-400 hover:bg-violet-500/20' : 'bg-violet-600/15 border-violet-600/40 text-violet-800 hover:bg-violet-600/25'}`}>Gemma 4 31B IT</span>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-violet-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-xs text-zinc-300 p-6 leading-relaxed shadow-xl">
@@ -221,7 +230,7 @@ export default function OverlayUI({ theme, setTheme }) {
           <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} tracking-tight`}>Ready for the next frontier?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl mt-6">
             <a href="https://www.linkedin.com/in/kunal-madaan-bsa/" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl dynamic-card hover:bg-violet-500/5 transition-all ${textPrimary} font-bold text-lg`}>LinkedIn</a>
-            <button onClick={copyEmail} className={`p-6 rounded-2xl border transition-all font-bold text-lg ${copied ? 'bg-violet-500/20 border-violet-500 text-violet-500' : `dynamic-card border-transparent ${textPrimary}`}`}>
+            <button onClick={copyEmail} className={`p-6 rounded-2xl border transition-all font-bold text-lg ${copied ? 'bg-violet-500/20 border-violet-500 text-violet-400' : `dynamic-card border-transparent ${textPrimary}`}`}>
               {copied ? "Copied Email!" : "Copy Email"}
             </button>
             <a href="/kunal-madaan.pdf" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl ${isDark ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:bg-zinc-200' : 'bg-slate-900 text-white shadow-[0_0_30px_rgba(0,0,0,0.1)] hover:bg-slate-800'} transition-all font-bold text-lg`}>Full Resume</a>
