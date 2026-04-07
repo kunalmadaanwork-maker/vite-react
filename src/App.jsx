@@ -1,6 +1,7 @@
 // File 1: App.jsx
 import React, { useState } from 'react';
 import { ReactLenis } from '@studio-freight/react-lenis';
+import { Analytics } from '@vercel/analytics/react';
 import Background3D from './Background3D';
 import OverlayUI from './OverlayUI';
 import './index.css';
@@ -24,6 +25,7 @@ export default function App() {
         </div>
         
       </div>
+      <Analytics />
     </ReactLenis>
   );
 }
