@@ -1,4 +1,4 @@
-// File 3: OverlayUI.jsx (RESUME ACCURACY UPDATE)
+// File 3: OverlayUI.jsx (FIXED SYNTAX)
 import React, { useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -40,7 +40,7 @@ export default function OverlayUI({ theme, setTheme }) {
         @keyframes blink { 50% { opacity: 0; } }
       `}</style>
 
-      {/* HEADER: Added explicit Resume Link for HRs */}
+      {/* HEADER */}
       <nav className="fixed top-0 z-50 w-full flex justify-center dynamic-nav">
         <div className="w-full max-w-6xl flex justify-between items-center py-4 px-6 md:px-8">
           <div className={`${textPrimary} font-bold tracking-tighter text-xl uppercase`}>Kunal Madaan</div>
@@ -60,19 +60,18 @@ export default function OverlayUI({ theme, setTheme }) {
 
       <main className="w-full max-w-6xl flex flex-col px-6 md:px-12 pt-40 pb-60">
         
-        {/* SECTION 1: IDENTITY - Corrected Epsilon Tenure & Certification Focus */}
+        {/* SECTION 1: IDENTITY */}
         <section id="identity" className="flex flex-col gap-12 mb-[40vh]">
           <div className="flex flex-col items-center text-center gap-6">
             <span className={`${isDark ? 'text-violet-400' : 'text-violet-600'} font-mono text-sm tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA</span>
             <h2 className={`text-5xl md:text-7xl font-bold ${textPrimary} leading-tight`}>Bridging Data To Enterprise Value.</h2>
             <p className={`${textSecondary} text-lg max-w-2xl leading-relaxed`}>
-              7+ years of experience bridging enterprise architecture and Agile delivery[cite: 4]. Certified Scrum Master (CSM®) and Product Owner (CSPO®)[cite: 2].
+              7+ years of experience bridging enterprise architecture and Agile delivery across Banking, Retail, Healthcare, and Insurance[cite: 4].
             </p>
-            {/* Certifications: Integrated into identity for trust */}
             <div className="flex flex-wrap justify-center gap-4 mt-2">
-              <span className={`px-4 py-1.5 rounded-full border ${isDark ? [cite_start]'border-white/10 text-zinc-400' : 'border-black/5 text-slate-600'} text-[10px] font-bold uppercase`}>CSM® & CSPO® [cite: 44]</span>
-              <span className={`px-4 py-1.5 rounded-full border ${isDark ? [cite_start]'border-white/10 text-zinc-400' : 'border-black/5 text-slate-600'} text-[10px] font-bold uppercase`}>GenAI Foundations [cite: 44]</span>
-              <span className={`px-4 py-1.5 rounded-full border ${isDark ? [cite_start]'border-white/10 text-zinc-400' : 'border-black/5 text-slate-600'} text-[10px] font-bold uppercase`}>Design Thinking [cite: 44]</span>
+              <span className={`px-4 py-1.5 rounded-full border ${isDark ? [cite_start]'border-white/10 text-zinc-400' : 'border-black/5 text-slate-600'} text-[10px] font-bold uppercase`}>CSM® & CSPO® </span>
+              <span className={`px-4 py-1.5 rounded-full border ${isDark ? [cite_start]'border-white/10 text-zinc-400' : 'border-black/5 text-slate-600'} text-[10px] font-bold uppercase`}>GenAI Foundations </span>
+              <span className={`px-4 py-1.5 rounded-full border ${isDark ? [cite_start]'border-white/10 text-zinc-400' : 'border-black/5 text-slate-600'} text-[10px] font-bold uppercase`}>Design Thinking </span>
             </div>
           </div>
 
@@ -81,7 +80,7 @@ export default function OverlayUI({ theme, setTheme }) {
               <span className="text-violet-500 font-mono text-[10px] font-bold uppercase">Dec 2023 — Present [cite: 11]</span>
               <h3 className={`${textPrimary} text-xl font-bold mt-2`}>Epsilon [cite: 8]</h3>
               <p className={`${textSecondary} text-sm mt-4 leading-relaxed`}>
-                Driving transformation for **RBC** (AI FSD Factory & Data Migration) and **CTC** (Retail Logic Audits).
+                Driving transformation for **RBC** (AI FSD Factory & Data Migration) and **CTC** (Retail Logic Audits)[cite: 15, 16, 17].
               </p>
             </div>
             <div className="dynamic-card p-8 rounded-3xl">
@@ -101,32 +100,30 @@ export default function OverlayUI({ theme, setTheme }) {
           </div>
         </section>
 
-        {/* SECTION 2: AI JOURNEY - Renamed and Project Detailed */}
+        {/* SECTION 2: AI JOURNEY */}
         <section id="aijourney" className="flex flex-col gap-[30vh] mb-[40vh]">
-          {/* Project 1: FSD Factory (RBC under Epsilon) */}
           <div className="node-left self-start w-full md:w-[48%] dynamic-card p-10 rounded-3xl group relative overflow-hidden">
             <span className="text-violet-500 font-mono text-xs font-bold uppercase">RBC Project (Epsilon) [cite: 15]</span>
-            <h3 className={`${textPrimary} text-3xl font-bold mt-2 mb-4`}>AI-Powered FSD Factory</h3>
-            <p className={`${textSecondary} leading-relaxed mb-6`}>Automating documentation with strict guardrails for Amazon Q and Copilot to save 70% in FSD generation time[cite: 14, 15].</p>
+            <h3 className={`${textPrimary} text-3xl font-bold mt-2 mb-4`}>AI-Powered FSD Factory [cite: 6, 15]</h3>
+            <p className={`${textSecondary} leading-relaxed mb-6`}>Automating documentation with strict guardrails for Amazon Q and Copilot to save 70% in FSD generation time[cite: 6, 14, 15].</p>
             <div className="absolute inset-0 bg-violet-900/95 backdrop-blur-xl p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center text-white">
               <h4 className="font-bold mb-2 font-mono text-xs uppercase tracking-widest text-violet-300">RAG Architecture Reveal:</h4>
-              <p className="text-xs leading-relaxed">Engineered a multi-stage RAG pipeline to generate hallucination-free FSDs from raw stakeholder transcripts[cite: 13, 15].</p>
+              <p className="text-xs leading-relaxed">Engineered a multi-stage RAG pipeline to generate hallucination-free FSDs from raw stakeholder transcripts[cite: 6, 13, 15].</p>
             </div>
           </div>
 
-          {/* Project 2: Fraud Detection (NTT Data) */}
           <div className="node-right self-end w-full md:w-[48%] dynamic-card p-10 rounded-3xl md:text-right group relative overflow-hidden">
             <span className="text-magenta-500 font-mono text-xs font-bold uppercase">Insurance ML POC [cite: 25]</span>
-            <h3 className={`${textPrimary} text-3xl font-bold mt-2 mb-4`}>Claims Fraud MVP</h3>
+            <h3 className={`${textPrimary} text-3xl font-bold mt-2 mb-4`}>Claims Fraud MVP [cite: 25]</h3>
             <p className={`${textSecondary} leading-relaxed`}>Automated manual fraud detection by mapping key indicators to ML model architecture for NTT Data[cite: 24, 25].</p>
             <div className="absolute inset-0 bg-magenta-900/95 backdrop-blur-xl p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center text-white text-left">
               <h4 className="font-bold mb-2 font-mono text-xs uppercase tracking-widest text-magenta-300">PnC Insurance Logic:</h4>
-              <p className="text-xs leading-relaxed">Collaborated with Data Science teams to identify indicators and map them to predictive model train sets[cite: 24, 28].</p>
+              <p className="text-xs leading-relaxed">Collaborated with Data Science teams to identify indicators and map them to predictive model train sets[cite: 24, 26].</p>
             </div>
           </div>
         </section>
 
-        {/* SECTION 3: HORIZON - Media R&D Placeholders */}
+        {/* SECTION 3: HORIZON */}
         <section id="horizon" className={`reveal dynamic-card p-12 rounded-3xl text-center mb-[40vh] border-dashed ${isDark ? 'border-violet-500/20' : 'border-violet-500/40'}`}>
           <h3 className={`text-3xl font-bold ${textPrimary} mb-6`}>Generative AI R&D Sandbox [cite: 35]</h3>
           <div className="flex flex-wrap justify-center gap-4 mb-10">
@@ -144,11 +141,11 @@ export default function OverlayUI({ theme, setTheme }) {
             </div>
           </div>
           <p className={`${textSecondary} text-lg max-w-2xl mx-auto italic font-mono text-sm cursor-blink`}>
-            "Converting unstructured whiteboard notes into standardized BDD User Stories." [cite: 38]
+            "Converting unstructured whiteboard notes into standardized BDD User Stories[cite: 38]."
           </p>
         </section>
 
-        {/* SECTION 4: CONTACT & RESUME LINK */}
+        {/* SECTION 4: CONTACT */}
         <section className="reveal flex flex-col items-center text-center gap-10">
           <h2 className={`text-4xl md:text-6xl font-bold ${textPrimary}`}>Ready for the next frontier?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl mt-4">
