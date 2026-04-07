@@ -1,3 +1,4 @@
+// File 2: Background3D.jsx
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { MeshTransmissionMaterial, Float, PerspectiveCamera, Points } from '@react-three/drei';
@@ -8,7 +9,8 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Starfield = () => {
+// Accepts the 'isDark' boolean to swap colors
+const Starfield = ({ isDark }) => {
   const points = useMemo(() => {
     const p = new Float32Array(6000 * 3);
     for (let i = 0; i < 6000; i++) {
@@ -24,12 +26,19 @@ const Starfield = () => {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={points.length / 3} array={points} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.04} color="#ffffff" transparent opacity={0.6} sizeAttenuation />
+      {/* Dark mode: White stars. Light mode: Subtle slate-blue data nodes */}
+      <pointsMaterial 
+        size={0.04} 
+        color={isDark ? "#ffffff" : "#64748b"} 
+        transparent 
+        opacity={isDark ? 0.6 : 0.3} 
+        sizeAttenuation 
+      />
     </Points>
   );
 };
 
-const NebulaGlow = () => {
+const NebulaGlow = ({ isDark }) => {
   const ref = useRef();
   useFrame((state) => {
     ref.current.rotation.y += 0.001;
@@ -39,28 +48,33 @@ const NebulaGlow = () => {
   return (
     <mesh ref={ref} position={[5, -5, -40]}>
       <sphereGeometry args={[25, 64, 64]} />
-      {/* Shifted to Magenta/Indigo palette */}
       <MeshTransmissionMaterial 
         thickness={5} 
         roughness={0.2} 
         chromaticAberration={1} 
         transmission={1} 
-        color="#701a75" 
+        /* Dark: Magenta Nebula. Light: Soft Azure/Cyan glow */
+        color={isDark ? "#701a75" : "#0ea5e9"} 
         transparent 
-        opacity={0.15} 
+        opacity={isDark ? 0.15 : 0.1} 
       />
     </mesh>
   );
 };
 
-const JourneyObjects = () => {
+const JourneyObjects = ({ isDark }) => {
+  // Define colors based on theme
+  const coreColor = isDark ? "#7c3aed" : "#0284c7"; // Violet vs Ocean Blue
+  const vaultColor = isDark ? "#c026d3" : "#38bdf8"; // Magenta vs Sky Blue
+  const emissiveInt = isDark ? 2 : 0.5; // Less glow in light mode, more glass reflection
+
   return (
     <group>
       {/* Stage 1: The Quill */}
       <Float position={[0, 0, 0]} speed={1.5}>
         <mesh rotation={[0, 0, Math.PI/4]}>
           <cylinderGeometry args={[0.02, 0.01, 2]} />
-          <meshPhysicalMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
+          <meshPhysicalMaterial color={isDark ? "#ffffff" : "#0f172a"} emissive={isDark ? "#ffffff" : "#000000"} emissiveIntensity={0.5} />
         </mesh>
       </Float>
 
@@ -68,7 +82,7 @@ const JourneyObjects = () => {
       <Float position={[3, -1, -30]} speed={3}>
         <mesh>
           <sphereGeometry args={[1.5, 32, 32]} />
-          <meshPhysicalMaterial color="#7c3aed" emissive="#7c3aed" emissiveIntensity={2} roughness={0} metalness={1} />
+          <meshPhysicalMaterial color={coreColor} emissive={coreColor} emissiveIntensity={emissiveInt} roughness={0.1} metalness={0.8} />
         </mesh>
       </Float>
 
@@ -76,11 +90,11 @@ const JourneyObjects = () => {
       <group position={[-3, 1, -60]}>
         <mesh>
           <icosahedronGeometry args={[2.5, 1]} />
-          <MeshTransmissionMaterial thickness={1} roughness={0} transmission={1} color="#c026d3" />
+          <MeshTransmissionMaterial thickness={1} roughness={0.1} transmission={1} color={vaultColor} />
         </mesh>
         <mesh rotation={[Math.PI/2, 0, 0]}>
           <torusGeometry args={[3.2, 0.02, 16, 100]} />
-          <meshPhysicalMaterial color="#c026d3" emissive="#c026d3" emissiveIntensity={3} />
+          <meshPhysicalMaterial color={vaultColor} emissive={vaultColor} emissiveIntensity={emissiveInt} />
         </mesh>
       </group>
 
@@ -89,7 +103,7 @@ const JourneyObjects = () => {
         {Array.from({ length: 12 }).map((_, i) => (
           <mesh key={i} position={[(i % 3) * 1.5 - 1.5, Math.floor(i / 3) * 1.5 - 2, 0]}>
             <boxGeometry args={[1, 0.1, 1.2]} />
-            <meshPhysicalMaterial color="#7c3aed" emissive="#7c3aed" emissiveIntensity={1} />
+            <meshPhysicalMaterial color={coreColor} emissive={coreColor} emissiveIntensity={emissiveInt} />
           </mesh>
         ))}
       </group>
@@ -97,39 +111,38 @@ const JourneyObjects = () => {
   );
 };
 
-const SceneController = () => {
+const SceneController = ({ isDark }) => {
   const cameraRef = useRef();
   useGSAP(() => {
     gsap.to(cameraRef.current.position, {
       z: -110,
       ease: 'none',
-      scrollTrigger: {
-        trigger: 'body',
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 2, // Slowed down for cinematic feel
-      }
+      scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 }
     });
   }, []);
 
   return (
     <>
       <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 10]} />
-      <Starfield />
-      <NebulaGlow />
-      <JourneyObjects />
+      <Starfield isDark={isDark} />
+      <NebulaGlow isDark={isDark} />
+      <JourneyObjects isDark={isDark} />
     </>
   );
 };
 
-export default function Background3D() {
+// 1. Receive the 'theme' prop from App.jsx
+export default function Background3D({ theme }) {
+  const isDark = theme === 'dark';
+
   return (
     <Canvas dpr={[1, 2]}>
-      <color attach="background" args={['#030303']} />
-      <fog attach="fog" args={['#030303', 5, 80]} />
-      <ambientLight intensity={0.2} />
-      <pointLight position={[10, 10, 10]} intensity={1.5} color="#7c3aed" />
-      <SceneController />
+      {/* 2. PRO-TIP: We removed <color attach="background"> so the CSS fade behind the canvas shows through! */}
+      {/* Fog color changes instantly to match the new background */}
+      <fog attach="fog" args={[isDark ? '#030303' : '#f8fafc', 5, 80]} />
+      <ambientLight intensity={isDark ? 0.2 : 0.8} />
+      <pointLight position={[10, 10, 10]} intensity={isDark ? 1.5 : 2} color={isDark ? "#7c3aed" : "#38bdf8"} />
+      <SceneController isDark={isDark} />
     </Canvas>
   );
 }
