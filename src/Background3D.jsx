@@ -73,7 +73,7 @@ const NebulaGlow = ({ isDark }) => {
   );
 };
 
-// THE FIX: True 3D Asteroid Belt stretching down the Z-Axis
+// THE FIX: Asteroids are now permanently anchored along the left side of the journey
 const AsteroidBelt = ({ isDark }) => {
   const meshRef = useRef();
   const count = 150; 
@@ -82,16 +82,18 @@ const AsteroidBelt = ({ isDark }) => {
   const particles = useMemo(() => {
     const temp = [];
     for (let i = 0; i < count; i++) {
-      // Pushed to the far left, stretched from Z=20 all the way to Z=-150
-      const x = -14 + (Math.random() - 0.5) * 6;
-      const y = (Math.random() - 0.5) * 30;
-      const z = 20 - Math.random() * 170; 
+      // Anchored strictly to the left side (X: -8 to -14)
+      const x = -11 + (Math.random() - 0.5) * 6;
+      // Spread vertically 
+      const y = (Math.random() - 0.5) * 20;
+      // Stretched along the entire camera journey (Z: 10 down to -130)
+      const z = 10 - Math.random() * 140; 
       
-      // Random sizes to give that realistic chunky look
       const scale = Math.random() * 0.8 + 0.2; 
       const rx = Math.random() * 0.02;
       const ry = Math.random() * 0.02;
-      temp.push({ x, y, z, scale, rx, ry });
+      const rz = Math.random() * 0.02;
+      temp.push({ x, y, z, scale, rx, ry, rz });
     }
     return temp;
   }, [count]);
@@ -99,9 +101,9 @@ const AsteroidBelt = ({ isDark }) => {
   useFrame(() => {
     const time = Date.now() * 0.0005;
     particles.forEach((particle, i) => {
-      // Gentle floating and spinning
-      dummy.position.set(particle.x, particle.y + Math.sin(time + i)*0.5, particle.z);
-      dummy.rotation.set(time * particle.rx * 50, time * particle.ry * 50, 0);
+      // Individual rocks bob and spin, but the belt itself never swings away
+      dummy.position.set(particle.x, particle.y + Math.sin(time + i) * 0.5, particle.z);
+      dummy.rotation.set(time * particle.rx * 50, time * particle.ry * 50, time * particle.rz * 50);
       dummy.scale.set(particle.scale, particle.scale, particle.scale);
       dummy.updateMatrix();
       meshRef.current.setMatrixAt(i, dummy.matrix);
@@ -111,13 +113,12 @@ const AsteroidBelt = ({ isDark }) => {
 
   return (
     <instancedMesh ref={meshRef} args={[null, null, count]}>
-      {/* Dodecahedrons look like real, jagged space rocks */}
       <dodecahedronGeometry args={[0.5, 0]} />
       <meshPhysicalMaterial 
         color={isDark ? "#8b5cf6" : "#94a3b8"} 
         roughness={0.9} 
         transparent 
-        opacity={isDark ? 0.4 : 0.6} 
+        opacity={isDark ? 0.3 : 0.5} 
       />
     </instancedMesh>
   );
@@ -129,7 +130,7 @@ const JourneyObjects = ({ isDark }) => {
 
   return (
     <group>
-      {/* REPLACED THE CENTER LINE WITH THE ASTEROID BELT */}
+      {/* The Asteroid Belt now safely occupies the left gutter */}
       <AsteroidBelt isDark={isDark} />
 
       <Float position={[4, -1, -30]} speed={3}>
