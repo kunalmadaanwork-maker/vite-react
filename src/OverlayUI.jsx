@@ -65,7 +65,7 @@ export default function OverlayUI({ theme, setTheme }) {
             <span className={`${isDark ? 'text-violet-400' : 'text-violet-600'} font-mono text-sm tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA</span>
             <h2 className={`text-5xl md:text-7xl font-bold ${textPrimary} leading-tight`}>Bridging Data To Enterprise Value.</h2>
             <p className={`${textSecondary} text-lg max-w-2xl leading-relaxed`}>
-              7+ years of experience bridging enterprise architecture and Agile delivery[cite: 4]. Certified Scrum Master (CSM®) and Product Owner (CSPO®)[cite: 2].
+              7+ years of experience bridging enterprise architecture and Agile delivery. Certified Scrum Master (CSM®) and Product Owner (CSPO®).
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-2">
               <span className={`px-4 py-1.5 rounded-full border ${isDark ? 'border-white/10 text-zinc-400' : 'border-black/5 text-slate-600'} text-[10px] font-bold uppercase`}>CSM® & CSPO®</span>
@@ -79,27 +79,27 @@ export default function OverlayUI({ theme, setTheme }) {
               <span className="text-violet-500 font-mono text-[10px] font-bold uppercase tracking-widest">Dec 2023 — Present</span>
               <h3 className={`${textPrimary} text-xl font-bold mt-2`}>Epsilon</h3>
               <p className={`${textSecondary} text-sm mt-4 leading-relaxed`}>
-                Driving transformation for **Tier-1 Financial Leaders** and **Global Retailers** [cite: 15, 17], specializing in AI pipelines and deep-dive data audits[cite: 13].
+                Driving transformation for **Tier-1 Financial Leaders** and **Global Retailers**, specializing in AI pipelines and deep-dive data audits.
               </p>
             </div>
             <div className="dynamic-card p-8 rounded-3xl">
               <span className="text-violet-500 font-mono text-[10px] font-bold uppercase tracking-widest">Nov 2021 — Oct 2023</span>
               <h3 className={`${textPrimary} text-xl font-bold mt-2`}>NTT Data</h3>
               <p className={`${textSecondary} text-sm mt-4 leading-relaxed`}>
-                Engineered an ML-driven Fraud Detection POC [cite: 25], translating complex insurance workflows into predictive data models[cite: 26].
+                Engineered an ML-driven Fraud Detection POC, translating complex insurance workflows into predictive data models.
               </p>
             </div>
             <div className="dynamic-card p-8 rounded-3xl">
               <span className="text-violet-500 font-mono text-[10px] font-bold uppercase tracking-widest">Aug 2018 — May 2021</span>
               <h3 className={`${textPrimary} text-xl font-bold mt-2`}>Crestech Systems</h3>
               <p className={`${textSecondary} text-sm mt-4 leading-relaxed`}>
-                Directed end-to-end QA for **Major Insurance product streams** [cite: 33], ensuring 100% data integrity across mobile and web platforms[cite: 33].
+                Directed end-to-end QA for **Major Insurance product streams**, ensuring 100% data integrity across mobile and web platforms.
               </p>
             </div>
           </div>
         </section>
 
-        {/* SECTION 2: AI JOURNEY (FIXED RAG SUBTEXT) */}
+        {/* SECTION 2: AI JOURNEY */}
         <section id="aijourney" className="flex flex-col gap-[20vh] mb-[40vh]">
           
           <div className="w-full dynamic-card p-10 md:p-14 rounded-[3rem] reveal border-violet-500/10">
@@ -108,21 +108,20 @@ export default function OverlayUI({ theme, setTheme }) {
                 <span className="bg-violet-500/10 text-violet-400 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Enterprise RAG Architecture</span>
                 <h3 className={`${textPrimary} text-3xl font-bold mt-4 mb-4 tracking-tight`}>Multi-Stage AI Pipeline</h3>
                 <p className={`${textSecondary} text-base leading-relaxed mb-6`}>
-                  Engineered a hallucination-free documentation pipeline[cite: 6, 15]. Leveraged Enterprise Copilot to feed a secure Knowledge Base fortified with strict guardrails.
+                  Engineered a hallucination-free documentation pipeline. Leveraged Enterprise Copilot to feed a secure Knowledge Base fortified with strict guardrails.
                 </p>
                 <div className="flex gap-8">
                   <div>
                     <div className="text-teal-400 text-3xl font-black">80%</div>
-                    <div className={`${textSecondary} text-[10px] uppercase font-bold`}>Structure Match [cite: 14]</div>
+                    <div className={`${textSecondary} text-[10px] uppercase font-bold`}>Structure Match</div>
                   </div>
                   <div>
                     <div className="text-violet-400 text-3xl font-black">70%</div>
-                    <div className={`${textSecondary} text-[10px] uppercase font-bold`}>Time Saved [cite: 14]</div>
+                    <div className={`${textSecondary} text-[10px] uppercase font-bold`}>Time Saved</div>
                   </div>
                 </div>
               </div>
 
-              {/* RESTORED RAG SUBTEXT NODES */}
               <div className="flex-1 w-full flex items-center justify-center gap-2">
                 <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/5 border border-white/5 text-center min-w-[110px]">
                   <div className="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-zinc-400 text-[10px] font-mono">&gt;_</div>
@@ -149,35 +148,36 @@ export default function OverlayUI({ theme, setTheme }) {
             <div className="group-hover:opacity-0 transition-opacity duration-300">
               <span className="text-magenta-500 font-mono text-xs font-bold uppercase tracking-widest">Insurance ML POC</span>
               <h3 className={`${textPrimary} text-3xl font-bold mt-2 mb-4`}>Claims Fraud MVP</h3>
-              <p className={`${textSecondary} leading-relaxed`}>Automated manual fraud detection by mapping high-risk indicators to predictive model architectures[cite: 24, 25].</p>
+              <p className={`${textSecondary} leading-relaxed`}>Automated manual fraud detection by mapping high-risk indicators to predictive model architectures.</p>
             </div>
             
             <div className="absolute inset-0 bg-magenta-900/95 backdrop-blur-3xl p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center text-white text-left">
               <h4 className="font-bold mb-2 font-mono text-xs uppercase tracking-widest text-magenta-300">PnC Insurance Logic:</h4>
-              <p className="text-xs leading-relaxed">Collaborated with Data Science teams to feature-engineer indicators for anomaly detection models[cite: 24].</p>
+              <p className="text-xs leading-relaxed">Collaborated with Data Science teams to feature-engineer indicators for anomaly detection models.</p>
             </div>
           </div>
         </section>
 
-        {/* SECTION 3: HORIZON (RESTORED GEMMA 4 & N8N CONTRAST) */}
+        {/* SECTION 3: HORIZON */}
         <section id="horizon" className={`reveal dynamic-card p-12 rounded-3xl text-center mb-[40vh] border-dashed ${isDark ? 'border-violet-500/20' : 'border-violet-500/40'}`}>
           <h3 className={`text-3xl font-bold ${textPrimary} mb-6`}>Generative AI R&D Sandbox</h3>
           <div className="flex flex-wrap justify-center gap-4 mb-10">
             <div className="group relative">
               <span className="px-5 py-2 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-500 text-xs font-bold uppercase cursor-help transition-all hover:bg-violet-500/20">Gemma 4 31B IT</span>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-violet-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-[10px] text-zinc-300 p-4 leading-relaxed">
-                Evaluating open-weight models for secure, offline documentation workflows without cloud data leakage[cite: 37, 38].
+                Evaluating open-weight models for secure, offline documentation workflows without cloud data leakage.
               </div>
             </div>
             <div className="group relative">
-              <span className="px-5 py-2 rounded-full bg-magenta-600/20 border border-magenta-500/40 text-magenta-600 dark:text-magenta-400 text-xs font-bold uppercase cursor-help transition-all hover:bg-magenta-500/30">n8n Automation</span>
+              {/* Perfectly matched styling structure, just swapping violet for magenta */}
+              <span className="px-5 py-2 rounded-full bg-magenta-500/10 border border-magenta-500/30 text-magenta-500 text-xs font-bold uppercase cursor-help transition-all hover:bg-magenta-500/20">n8n Automation</span>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-magenta-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-[10px] text-zinc-300 p-4 leading-relaxed">
-                Prototyping automated data-parsing pipelines to replace manual SQL reconciliation tasks[cite: 41, 42].
+                Prototyping automated data-parsing pipelines to replace manual SQL reconciliation tasks.
               </div>
             </div>
           </div>
           <p className={`${textSecondary} text-lg max-w-2xl mx-auto italic font-mono text-sm cursor-blink`}>
-            "Converting unstructured whiteboard notes into standardized BDD User Stories"[cite: 38].
+            "Converting unstructured whiteboard notes into standardized BDD User Stories".
           </p>
         </section>
 
