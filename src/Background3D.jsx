@@ -10,7 +10,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 const SwirlingGalaxy = ({ isDark }) => {
   const groupRef = useRef();
-  
   const points = useMemo(() => {
     const count = 4000;
     const p = new Float32Array(count * 3);
@@ -19,7 +18,6 @@ const SwirlingGalaxy = ({ isDark }) => {
       const spinAngle = radius * 0.1; 
       const branchAngle = ((i % 3) * 2 * Math.PI) / 3; 
       const angle = branchAngle + spinAngle;
-      
       p[i * 3] = Math.cos(angle) * radius + (Math.random() - 0.5) * 10; 
       p[i * 3 + 1] = (Math.random() - 0.5) * (15 - radius * 0.1); 
       p[i * 3 + 2] = Math.sin(angle) * radius + (Math.random() - 0.5) * 10; 
@@ -27,9 +25,7 @@ const SwirlingGalaxy = ({ isDark }) => {
     return p;
   }, []);
 
-  useFrame(() => {
-    groupRef.current.rotation.y -= 0.0005;
-  });
+  useFrame(() => { groupRef.current.rotation.y -= 0.0005; });
 
   return (
     <group ref={groupRef} position={[0, -10, -50]} rotation={[0.2, 0, 0]}>
@@ -37,14 +33,7 @@ const SwirlingGalaxy = ({ isDark }) => {
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={points.length / 3} array={points} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial 
-          size={0.15} 
-          color={isDark ? "#ffffff" : "#334155"} 
-          transparent 
-          opacity={isDark ? 0.6 : 0.4} 
-          sizeAttenuation={true} 
-          fog={true} 
-        />
+        <pointsMaterial size={0.15} color={isDark ? "#ffffff" : "#334155"} transparent opacity={isDark ? 0.6 : 0.4} sizeAttenuation={true} fog={true} />
       </points>
     </group>
   );
@@ -52,28 +41,50 @@ const SwirlingGalaxy = ({ isDark }) => {
 
 const NebulaGlow = ({ isDark }) => {
   const ref = useRef();
-  useFrame((state) => {
+  useFrame(() => {
     ref.current.rotation.y += 0.001;
     ref.current.rotation.z += 0.0005;
   });
-
   return (
     <mesh ref={ref} position={[0, 0, -40]}>
       <sphereGeometry args={[35, 64, 64]} />
-      <MeshTransmissionMaterial 
-        thickness={10} 
-        roughness={0.6} 
-        transmission={1} 
-        chromaticAberration={0.5}
-        color={isDark ? "#4c1d95" : "#b45309"} 
-        transparent 
-        opacity={isDark ? 0.15 : 0.08} 
-      />
+      <MeshTransmissionMaterial thickness={10} roughness={0.6} transmission={1} chromaticAberration={0.5} color={isDark ? "#4c1d95" : "#b45309"} transparent opacity={isDark ? 0.15 : 0.08} />
     </mesh>
   );
 };
 
-// THE FIX: Asteroids are now permanently anchored along the left side of the journey
+// NEW: The Saturn Rings (Framing the Hero Container)
+const SaturnRings = ({ isDark }) => {
+  const ringGroup = useRef();
+  
+  useFrame(() => {
+    ringGroup.current.rotation.z -= 0.001;
+    ringGroup.current.rotation.y += 0.0005;
+  });
+
+  // Tilted backwards and framing the center
+  return (
+    <group ref={ringGroup} position={[0, 0, -15]} rotation={[1.4, 0, 0.2]}>
+      {/* Outer Thin Ring */}
+      <mesh>
+        <torusGeometry args={[14, 0.02, 16, 100]} />
+        <meshBasicMaterial color={isDark ? "#8b5cf6" : "#475569"} transparent opacity={0.6} />
+      </mesh>
+      {/* Middle Thick Glowing Ring */}
+      <mesh>
+        <torusGeometry args={[13.5, 0.15, 16, 100]} />
+        <meshBasicMaterial color={isDark ? "#c026d3" : "#64748b"} transparent opacity={0.3} />
+      </mesh>
+      {/* Inner Thin Ring */}
+      <mesh>
+        <torusGeometry args={[12.8, 0.03, 16, 100]} />
+        <meshBasicMaterial color={isDark ? "#2dd4bf" : "#94a3b8"} transparent opacity={0.8} />
+      </mesh>
+    </group>
+  );
+};
+
+// FIXED: Brighter, more visible Asteroids
 const AsteroidBelt = ({ isDark }) => {
   const meshRef = useRef();
   const count = 150; 
@@ -82,13 +93,9 @@ const AsteroidBelt = ({ isDark }) => {
   const particles = useMemo(() => {
     const temp = [];
     for (let i = 0; i < count; i++) {
-      // Anchored strictly to the left side (X: -8 to -14)
-      const x = -11 + (Math.random() - 0.5) * 6;
-      // Spread vertically 
+      const x = -12 + (Math.random() - 0.5) * 8;
       const y = (Math.random() - 0.5) * 20;
-      // Stretched along the entire camera journey (Z: 10 down to -130)
       const z = 10 - Math.random() * 140; 
-      
       const scale = Math.random() * 0.8 + 0.2; 
       const rx = Math.random() * 0.02;
       const ry = Math.random() * 0.02;
@@ -101,7 +108,6 @@ const AsteroidBelt = ({ isDark }) => {
   useFrame(() => {
     const time = Date.now() * 0.0005;
     particles.forEach((particle, i) => {
-      // Individual rocks bob and spin, but the belt itself never swings away
       dummy.position.set(particle.x, particle.y + Math.sin(time + i) * 0.5, particle.z);
       dummy.rotation.set(time * particle.rx * 50, time * particle.ry * 50, time * particle.rz * 50);
       dummy.scale.set(particle.scale, particle.scale, particle.scale);
@@ -114,11 +120,14 @@ const AsteroidBelt = ({ isDark }) => {
   return (
     <instancedMesh ref={meshRef} args={[null, null, count]}>
       <dodecahedronGeometry args={[0.5, 0]} />
-      <meshPhysicalMaterial 
-        color={isDark ? "#8b5cf6" : "#94a3b8"} 
-        roughness={0.9} 
+      {/* Switched to StandardMaterial with emissive glow so they are highly visible */}
+      <meshStandardMaterial 
+        color={isDark ? "#a78bfa" : "#94a3b8"} 
+        emissive={isDark ? "#4c1d95" : "#475569"}
+        emissiveIntensity={0.5}
+        roughness={0.7} 
         transparent 
-        opacity={isDark ? 0.3 : 0.5} 
+        opacity={0.8} 
       />
     </instancedMesh>
   );
@@ -130,7 +139,7 @@ const JourneyObjects = ({ isDark }) => {
 
   return (
     <group>
-      {/* The Asteroid Belt now safely occupies the left gutter */}
+      <SaturnRings isDark={isDark} />
       <AsteroidBelt isDark={isDark} />
 
       <Float position={[4, -1, -30]} speed={3}>
@@ -185,12 +194,11 @@ const SceneController = ({ isDark }) => {
 
 export default function Background3D({ theme }) {
   const isDark = theme === 'dark';
-
   return (
     <Canvas dpr={[1, 2]}>
       <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 90]} />
-      <ambientLight intensity={isDark ? 0.2 : 0.8} />
-      <pointLight position={[10, 10, 10]} intensity={isDark ? 2 : 1} color={isDark ? "#c026d3" : "#0f172a"} />
+      <ambientLight intensity={isDark ? 0.4 : 1} />
+      <pointLight position={[10, 10, 10]} intensity={isDark ? 2 : 1.5} color={isDark ? "#c026d3" : "#0f172a"} />
       <SceneController isDark={isDark} />
     </Canvas>
   );
