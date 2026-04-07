@@ -1,4 +1,3 @@
-// File 3: OverlayUI.jsx
 import React, { useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -16,19 +15,18 @@ export default function OverlayUI() {
   };
 
   useGSAP(() => {
-    const nodes = gsap.utils.toArray('.story-node');
-    nodes.forEach((node) => {
-      gsap.fromTo(node, 
-        { opacity: 0, y: 50 }, 
+    // Smoother reveal for cards
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      gsap.fromTo(el, 
+        { opacity: 0, y: 30 }, 
         { 
-          opacity: 1, 
-          y: 0, 
+          opacity: 1, y: 0, 
           scrollTrigger: {
-            trigger: node,
-            start: 'top 80%',
-            end: 'top 20%',
-            scrub: true,
-          }
+            trigger: el,
+            start: 'top 85%',
+            end: 'top 50%',
+            scrub: 1
+          } 
         }
       );
     });
@@ -37,134 +35,124 @@ export default function OverlayUI() {
   return (
     <div className="w-full flex flex-col items-center">
       <style>{`
-        .glass-nav {
-            background: rgba(5, 5, 5, 0.7);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        html { scroll-behavior: smooth; }
+        section { scroll-margin-top: 100px; }
+        .glass-card {
+            background: rgba(15, 15, 15, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
         }
-        .pipeline-flow {
-            background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.2), transparent);
-            background-size: 200% 100%;
-            animation: flow 2s infinite linear;
+        .glass-card:hover {
+            border-color: rgba(124, 58, 237, 0.4);
+            transform: translateY(-5px);
         }
-        @keyframes flow {
-            0% { background-position: 100% 0; }
-            100% { background-position: -100% 0; }
-        }
+        .text-glow-purple { text-shadow: 0 0 20px rgba(124, 58, 237, 0.5); }
       `}</style>
 
-      <nav className="sticky top-0 z-50 w-full flex justify-center glass-nav">
-        <div className="w-full max-w-6xl flex justify-between items-center py-4 px-6 md:px-8">
-          <div className="text-white font-bold tracking-tighter text-lg">KM // ARCHITECT</div>
-          <div className="flex gap-8 items-center">
+      {/* Header Fix: Name + Icon + Alignment */}
+      <nav className="fixed top-0 z-50 w-full flex justify-center bg-black/50 backdrop-blur-md border-b border-white/5">
+        <div className="w-full max-w-6xl flex justify-between items-center py-5 px-8">
+          <div className="text-white font-bold tracking-tighter text-xl">KUNAL MADAAN</div>
+          <div className="flex gap-10 items-center">
             {['Identity', 'Journey', 'Archive', 'Horizon'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-zinc-400 hover:text-white transition-colors text-xs font-medium uppercase tracking-widest">
+              <a key={item} href={`#${item.toLowerCase()}`} className="text-zinc-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-[0.2em]">
                 {item}
               </a>
             ))}
-            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 cursor-pointer hover:bg-zinc-700 transition-colors" />
+            {/* Real Theme Toggle Icon (Sun) */}
+            <button className="text-zinc-400 hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
           </div>
         </div>
       </nav>
 
-      <main className="w-full max-w-4xl flex flex-col gap-[70vh] p-6 md:p-8 pt-40 pb-96">
+      <main className="w-full max-w-6xl flex flex-col px-6 md:px-12 pt-40 pb-60">
         
-        {/* Section 1: Identity */}
-        <section id="identity" className="story-node flex flex-col items-start gap-6">
-          <span className="text-teal-400 font-mono text-xs tracking-widest uppercase">The Foundation</span>
-          <h2 className="text-5xl md:text-7xl font-bold text-white leading-tight">
-            Bridging the Gap <br /> Between Data & Value.
+        {/* Section 1: Centered Identity */}
+        <section id="identity" className="reveal flex flex-col items-center text-center gap-6 mb-[40vh]">
+          <span className="text-violet-400 font-mono text-xs tracking-widest uppercase mb-2">Techno-Functional Architect</span>
+          <h2 className="text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter">
+            Bridging Data <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-magenta-500">To Enterprise Value.</span>
           </h2>
-          <p className="text-zinc-400 text-xl max-w-2xl leading-relaxed">
-            7+ years as a Techno-Functional Senior BSA, specializing in transforming complex enterprise chaos into 
-            high-velocity engineering roadmaps.
+          <p className="text-zinc-400 text-xl max-w-2xl leading-relaxed mt-4">
+            7+ years of experience across Tier-1 Financial Institutions and Retailers, transforming complex technical ambiguity into precision roadmaps.
           </p>
         </section>
 
-        {/* Section 2: Signature Journey (AI Factory) */}
-        <section id="journey" className="story-node flex flex-col items-start gap-12">
-          <span className="text-blue-400 font-mono text-xs tracking-widest uppercase">The AI FSD Factory</span>
-          <div className="flex flex-col gap-20 w-full">
-            <div className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="w-full md:w-1/2 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <h3 className="text-white font-bold text-xl mb-2">01. Manual Intake</h3>
-                <p className="text-zinc-400 text-sm">Fragmented requirements and raw stakeholder intent. The bottleneck of legacy BSA work.</p>
-              </div>
-              <div className="hidden md:block w-12 h-px bg-teal-500/30 mt-10" />
-              <div className="w-full md:w-1/2 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <h3 className="text-white font-bold text-xl mb-2">02. Copilot Sync</h3>
-                <p className="text-zinc-400 text-sm">Leveraging Enterprise LLMs to extract structured intent from raw data streams.</p>
-              </div>
-            </div>
-            <div className="flex flex-col md:flex-row-reverse gap-8 items-start">
-              <div className="w-full md:w-1/2 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <h3 className="text-white font-bold text-xl mb-2">03. The Vault</h3>
-                <p className="text-zinc-400 text-sm">Amazon Q Knowledge Base with strict guardrails for a Tier-1 Financial Institution.</p>
-              </div>
-              <div className="hidden md:block w-12 h-px bg-teal-500/30 mt-10" />
-              <div className="w-full md:w-1/2 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                <h3 className="text-white font-bold text-xl mb-2">04. Precision Output</h3>
-                <p className="text-zinc-400 text-sm">80% structure match and 70% time saved on FSD generation.</p>
-              </div>
-            </div>
+        {/* Section 2: ZIG-ZAG JOURNEY */}
+        <section id="journey" className="flex flex-col gap-[30vh] mb-[40vh]">
+          <div className="reveal self-start w-full md:w-[45%] glass-card p-10 rounded-[2rem]">
+            <span className="text-violet-500 font-mono text-[10px] tracking-widest uppercase">Stage 01</span>
+            <h3 className="text-white font-bold text-3xl mt-2 mb-4">Manual Intake</h3>
+            <p className="text-zinc-400 leading-relaxed">The bottleneck of legacy BSA work. Fragmented requirements and raw stakeholder intent parsed through traditional SDLC frameworks.</p>
           </div>
-          <div className="w-full h-1 pipeline-flow rounded-full" />
-        </section>
 
-        {/* Section 3: Impact Archive */}
-        <section id="archive" className="story-node flex flex-col items-start gap-8">
-          <span className="text-teal-400 font-mono text-xs tracking-widest uppercase">Impact Archive</span>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            <div className="p-8 rounded-3xl bg-zinc-900/50 border border-white/5 hover:border-teal-500/30 transition-colors group">
-              <h4 className="text-white font-bold text-xl mb-2 group-hover:text-teal-400 transition-colors">NTT DATA ML POC</h4>
-              <p className="text-zinc-400 text-sm">Engineered the functional blueprint for an ML-driven fraud detection system in insurance.</p>
-            </div>
-            <div className="p-8 rounded-3xl bg-zinc-900/50 border border-white/5 hover:border-blue-500/30 transition-colors group">
-              <h4 className="text-white font-bold text-xl mb-2 group-hover:text-blue-400 transition-colors">Tableau Migration</h4>
-              <p className="text-zinc-400 text-sm">Directed end-to-end reporting migration from Business Objects for a Tier-1 North American Bank.</p>
-            </div>
+          <div className="reveal self-end w-full md:w-[45%] glass-card p-10 rounded-[2rem] text-right">
+            <span className="text-magenta-500 font-mono text-[10px] tracking-widest uppercase">Stage 02</span>
+            <h3 className="text-white font-bold text-3xl mt-2 mb-4">Copilot Sync</h3>
+            <p className="text-zinc-400 leading-relaxed">Transitioning to Agentic workflows. Using Enterprise LLMs to extract structured logic from raw data streams in real-time.</p>
+          </div>
+
+          <div className="reveal self-start w-full md:w-[45%] glass-card p-10 rounded-[2rem]">
+            <span className="text-violet-500 font-mono text-[10px] tracking-widest uppercase">Stage 03</span>
+            <h3 className="text-white font-bold text-3xl mt-2 mb-4">The Vault</h3>
+            <p className="text-zinc-400 leading-relaxed">Implementing Amazon Q Knowledge Bases with strict governance. Secure, RAG-based intelligence for high-stakes financial environments.</p>
+          </div>
+
+          <div className="reveal self-end w-full md:w-[45%] glass-card p-10 rounded-[2rem] text-right">
+            <span className="text-magenta-500 font-mono text-[10px] tracking-widest uppercase">Stage 04</span>
+            <h3 className="text-white font-bold text-3xl mt-2 mb-4">Precision FSD</h3>
+            <p className="text-zinc-400 leading-relaxed">The final frontier: 80% structure match and 70% time reduction in producing functional specifications ready for dev.</p>
           </div>
         </section>
 
-        {/* Section 4: Technical Horizon */}
-        <section id="horizon" className="story-node flex flex-col items-start gap-6">
-          <span className="text-blue-400 font-mono text-xs tracking-widest uppercase">Technical Horizon</span>
-          <div className="p-10 rounded-3xl bg-gradient-to-br from-zinc-900 to-black border border-white/10 w-full">
-            <h3 className="text-2xl font-bold text-white mb-4">R&D Sandbox</h3>
-            <div className="flex flex-wrap gap-4">
-              <div className="px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-xs font-mono">Google Gemma 4</div>
-              <div className="px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono">n8n Automation</div>
-              <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-zinc-400 text-xs font-mono">Agentic Workflows</div>
+        {/* Section 3: Alternating Archive */}
+        <section id="archive" className="flex flex-col gap-10 mb-[40vh]">
+          <div className="reveal glass-card p-12 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1">
+                <h4 className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-2">Migration Lead</h4>
+                <h3 className="text-white font-bold text-4xl mb-4">Tableau Modernization</h3>
+                <p className="text-zinc-400 text-lg">Directed the global reporting shift from Business Objects for a Tier-1 Bank, ensuring zero-defect data integrity across multiple DB schemas.</p>
             </div>
-            <p className="text-zinc-500 text-sm mt-6 max-w-xl italic">
-              Currently evaluating open-weight edge models for offline Agile User Story generation.
-            </p>
+            <div className="text-5xl font-black text-white/5 select-none">MIGRATE</div>
+          </div>
+
+          <div className="reveal glass-card p-12 rounded-[2.5rem] flex flex-col md:flex-row-reverse items-center gap-8">
+            <div className="flex-1 text-right">
+                <h4 className="text-zinc-500 font-mono text-xs uppercase tracking-widest mb-2">Technical POC</h4>
+                <h3 className="text-white font-bold text-4xl mb-4">Fraud ML Blueprint</h3>
+                <p className="text-zinc-400 text-lg">Engineered the functional architecture for a Python-based Fraud Detection system at NTT DATA, leveraging ML logic for insurance claims.</p>
+            </div>
+            <div className="text-5xl font-black text-white/5 select-none">INNOVATE</div>
           </div>
         </section>
 
-        {/* Section 5: Contact Hub */}
-        <section className="story-node flex flex-col items-center text-center gap-10">
-          <div className="px-4 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-            [STATUS: Currently Leading AI Transformation]
+        {/* Section 4: Horizon (Centered Focus) */}
+        <section id="horizon" className="reveal glass-card p-16 rounded-[3rem] text-center mb-[40vh] border-dashed border-violet-500/20">
+          <h3 className="text-4xl font-bold text-white mb-6">Technical Horizon</h3>
+          <div className="flex justify-center gap-4 mb-8">
+            <span className="px-5 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-bold uppercase">Gemma 4 R&D</span>
+            <span className="px-5 py-2 rounded-full bg-magenta-500/10 border border-magenta-500/20 text-magenta-400 text-xs font-bold uppercase">n8n Automation</span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-bold text-white">Ready for the next <br /> frontier?</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
-            <a href="YOUR_LINKEDIN_URL" className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white font-medium">
-              LinkedIn
-            </a>
-            <button 
-              onClick={copyEmail} 
-              className={`p-6 rounded-2xl border transition-all font-medium ${copied ? 'bg-teal-500/20 border-teal-500 text-teal-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
-            >
-              {copied ? "Copied Email!" : "Copy Email"}
-            </button>
-            <a href="RESUME_LINK" className="p-6 rounded-2xl bg-white text-black hover:bg-zinc-200 transition-all font-bold">
-              Full Case Study
-            </a>
-          </div>
+          <p className="text-zinc-400 text-lg max-w-2xl mx-auto italic">
+            "Currently evaluating agentic workflows for autonomous Agile User Story generation. Testing edge-model latency for offline enterprise deployments."
+          </p>
         </section>
 
+        {/* Contact Hub */}
+        <section className="reveal flex flex-col items-center text-center gap-10">
+          <div className="px-4 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[10px] font-bold uppercase tracking-[0.3em] animate-pulse">
+            [ STATUS: Leading AI Transformation ]
+          </div>
+          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter">Ready to Architect <br /> the Future?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-4xl mt-6">
+            <a href="#" className="p-8 rounded-3xl glass-card text-white font-bold text-lg">LinkedIn</a>
+            <button onClick={copyEmail} className="p-8 rounded-3xl glass-card text-white font-bold text-lg">{copied ? "Copied!" : "Email"}</button>
+            <a href="#" className="p-8 rounded-3xl bg-white text-black font-bold text-lg hover:bg-zinc-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)]">Resume</a>
+          </div>
+        </section>
       </main>
     </div>
   );
