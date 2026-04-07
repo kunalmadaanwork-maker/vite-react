@@ -8,9 +8,6 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// 1. EXTEND BLOCK COMPLETELY REMOVED. 
-// We are using native elements and standard Drei components. Zero risk of constructor crashes.
-
 const Starfield = () => {
   const points = useMemo(() => {
     const p = new Float32Array(6000 * 3);
@@ -27,7 +24,6 @@ const Starfield = () => {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={points.length / 3} array={points} itemSize={3} />
       </bufferGeometry>
-      {/* Lowercase native Three.js pointsMaterial - never crashes */}
       <pointsMaterial size={0.04} color="#ffffff" transparent opacity={0.6} sizeAttenuation />
     </Points>
   );
@@ -43,7 +39,7 @@ const NebulaGlow = () => {
   return (
     <mesh ref={ref} position={[5, -5, -40]}>
       <sphereGeometry args={[25, 64, 64]} />
-      {/* Uppercase Drei Component used directly - perfectly safe */}
+      {/* Shifted to Magenta/Indigo palette */}
       <MeshTransmissionMaterial 
         thickness={5} 
         roughness={0.2} 
@@ -111,7 +107,7 @@ const SceneController = () => {
         trigger: 'body',
         start: 'top top',
         end: 'bottom bottom',
-        scrub: 2,
+        scrub: 2, // Slowed down for cinematic feel
       }
     });
   }, []);
