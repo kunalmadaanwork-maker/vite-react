@@ -97,37 +97,39 @@ export default function OverlayUI({ theme, setTheme }) {
         {/* SECTION 1: IDENTITY */}
         <section id="identity" className="flex flex-col gap-12 mb-[40vh] reveal relative">
 
-          {/* HERO CARD */}
-          <div className="dynamic-card p-10 md:p-16 rounded-[3rem] flex flex-col items-center text-center gap-6 w-full max-w-5xl mx-auto shadow-2xl relative overflow-hidden border-violet-500/20">
+          {/* HERO CARD - Responsive padding and radius */}
+          <div className="dynamic-card p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] flex flex-col items-center text-center gap-6 w-full max-w-5xl mx-auto shadow-2xl relative overflow-hidden border-violet-500/20">
             <div className={`absolute inset-0 opacity-20 pointer-events-none ${isDark ? 'bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10' : 'bg-gradient-to-br from-violet-400/5 to-fuchsia-400/5'}`} />
 
             <div className="relative z-10 flex flex-col items-center gap-6">
               <span className={`${isDark ? 'text-violet-400' : 'text-violet-700'} font-mono text-base md:text-lg tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA & AI Architect</span>
 
-              {/* FIX 1: Stronger, more specific hero headline */}
-              {/* Added break-words and reduced text size slightly on smallest screens to prevent bleed */}
+              {/* FIX 1: Break-words and text scaling */}
               <h2 className={`text-3xl sm:text-4xl md:text-5xl font-black ${textPrimary} leading-tight tracking-tight break-words max-w-full px-2`}>
                 I automate the work<br />that slows enterprises down.
               </h2>
 
-              {/* Added break-words, px-2 for safe area, and max-w-full */}
               <p className={`${textSecondary} text-base sm:text-lg md:text-xl max-w-full md:max-w-2xl leading-relaxed break-words px-2`}>
                 7+ years bridging legacy enterprise complexity and modern GenAI delivery. Certified Scrum Master (CSM®) and Product Owner (CSPO®) across Banking, Retail, Healthcare, and Insurance.
               </p>
 
-              {/* FIX 2: Added key metric right in the hero */}
-              <div className={`flex gap-8 mt-2 px-8 py-4 rounded-2xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
-                <div className="text-center">
+              {/* FIX 2: Fluid Metrics Bar */}
+              <div className={`flex flex-wrap md:flex-nowrap justify-center gap-4 sm:gap-6 md:gap-8 mt-2 px-4 sm:px-6 md:px-8 py-4 rounded-2xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
+                <div className="text-center w-full sm:w-auto">
                   <div className={`text-3xl font-black metric-glow ${isDark ? 'text-teal-400' : 'text-teal-600'}`}>70%</div>
                   <div className={`${textSecondary} text-[10px] uppercase font-bold mt-1 tracking-widest`}>FSD Time Saved</div>
                 </div>
-                <div className={`w-px ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
-                <div className="text-center">
+                
+                <div className={`hidden sm:block w-px ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                
+                <div className="text-center w-[40%] sm:w-auto">
                   <div className={`text-3xl font-black metric-glow ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>80%+</div>
                   <div className={`${textSecondary} text-[10px] uppercase font-bold mt-1 tracking-widest`}>Structure Match</div>
                 </div>
-                <div className={`w-px ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
-                <div className="text-center">
+                
+                <div className={`hidden sm:block w-px ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                
+                <div className="text-center w-[40%] sm:w-auto">
                   <div className={`text-3xl font-black metric-glow ${isDark ? 'text-fuchsia-400' : 'text-fuchsia-600'}`}>7+</div>
                   <div className={`${textSecondary} text-[10px] uppercase font-bold mt-1 tracking-widest`}>Years Enterprise</div>
                 </div>
@@ -147,7 +149,6 @@ export default function OverlayUI({ theme, setTheme }) {
             </div>
           </div>
 
-          {/* FIX 3: Job History Cards — fixed markdown bold, added metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             <div className="dynamic-card p-8 rounded-3xl flex flex-col gap-3">
               <span className="text-violet-500 font-mono text-xs font-bold uppercase tracking-widest">Dec 2023 — Present</span>
@@ -245,7 +246,6 @@ export default function OverlayUI({ theme, setTheme }) {
         {/* SECTION 3: HORIZON */}
         <section id="horizon" className="flex flex-col gap-10 mb-[40vh]">
 
-          {/* FIX 4: Existing GenAI Sandbox card — unchanged visually */}
           <div className={`reveal dynamic-card p-12 rounded-3xl text-center border-dashed ${isDark ? 'border-violet-500/20' : 'border-violet-500/40'}`}>
             <h3 className={`text-3xl font-black ${textPrimary} mb-8`}>Generative AI R&D Sandbox</h3>
             <div className="flex flex-wrap justify-center gap-6 mb-12">
@@ -267,7 +267,6 @@ export default function OverlayUI({ theme, setTheme }) {
             </p>
           </div>
 
-          {/* FIX 5: NEW — n8n AI Job Hunt Pipeline card */}
           <div className="reveal dynamic-card p-10 md:p-14 rounded-[3rem] border-teal-500/20 relative overflow-hidden">
             {/* Subtle background glow */}
             <div className={`absolute inset-0 opacity-10 pointer-events-none bg-gradient-to-br ${isDark ? 'from-teal-500/20 to-violet-500/10' : 'from-teal-400/10 to-violet-400/5'}`} />
@@ -360,10 +359,6 @@ export default function OverlayUI({ theme, setTheme }) {
                       </div>
                       <p className={`${textSecondary} text-xs leading-relaxed`}>{item.detail}</p>
                     </div>
-                    {i < 3 && (
-                      <div className="hidden md:flex items-center justify-center self-center absolute">
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -393,7 +388,6 @@ export default function OverlayUI({ theme, setTheme }) {
 
         {/* SECTION 4: CONTACT */}
         <section id="contact" className="reveal flex flex-col items-center text-center gap-10">
-          {/* FIX 6: Stronger contact headline */}
           <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} tracking-tight`}>Let's build something<br />that actually scales.</h2>
           <p className={`${textSecondary} text-lg max-w-xl`}>Open to Senior BSA, AI Product Owner, and GenAI Consultant roles. Based in Bengaluru — open to remote.</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl mt-2">
