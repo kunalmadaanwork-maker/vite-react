@@ -105,9 +105,13 @@ export default function OverlayUI({ theme, setTheme }) {
               <span className={`${isDark ? 'text-violet-400' : 'text-violet-700'} font-mono text-base md:text-lg tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA & AI Architect</span>
 
               {/* FIX 1: Stronger, more specific hero headline */}
-              <h2 className={`text-4xl md:text-5xl font-black ${textPrimary} leading-tight tracking-tight`}>I automate the work<br />that slows enterprises down.</h2>
+              {/* Added break-words and reduced text size slightly on smallest screens to prevent bleed */}
+              <h2 className={`text-3xl sm:text-4xl md:text-5xl font-black ${textPrimary} leading-tight tracking-tight break-words max-w-full px-2`}>
+                I automate the work<br />that slows enterprises down.
+              </h2>
 
-              <p className={`${textSecondary} text-lg md:text-xl max-w-2xl leading-relaxed`}>
+              {/* Added break-words, px-2 for safe area, and max-w-full */}
+              <p className={`${textSecondary} text-base sm:text-lg md:text-xl max-w-full md:max-w-2xl leading-relaxed break-words px-2`}>
                 7+ years bridging legacy enterprise complexity and modern GenAI delivery. Certified Scrum Master (CSM®) and Product Owner (CSPO®) across Banking, Retail, Healthcare, and Insurance.
               </p>
 
