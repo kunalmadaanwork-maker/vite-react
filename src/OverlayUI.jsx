@@ -49,9 +49,15 @@ export default function OverlayUI({ theme, setTheme }) {
         <div className="w-full max-w-6xl flex justify-between items-center py-4 px-6 md:px-8">
           <div className={`${textPrimary} font-black tracking-tighter text-xl uppercase`}>Kunal Madaan</div>
           <div className="hidden md:flex gap-6 items-center">
-            {['Identity', 'AI Journey', 'Horizon'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase().replace(' ', '')}`} className={`${textSecondary} hover:${textPrimary} transition-colors text-xs font-bold uppercase tracking-widest`}>
-                {item}
+            {[
+              { label: 'Identity', id: 'identity' },
+              { label: 'AI Journey', id: 'aijourney' },
+              { label: 'Horizon', id: 'horizon' },
+              { label: 'Built With AI', id: 'builtwith' },
+              { label: 'Contact', id: 'contact' },
+            ].map((item) => (
+              <a key={item.id} href={`#${item.id}`} className={`${textSecondary} hover:${textPrimary} transition-colors text-xs font-bold uppercase tracking-widest`}>
+                {item.label}
               </a>
             ))}
             <a href="/kunal-madaan.pdf" target="_blank" className="bg-violet-600 hover:bg-violet-500 text-white px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all shadow-lg shadow-violet-500/20">Resume</a>
@@ -72,9 +78,15 @@ export default function OverlayUI({ theme, setTheme }) {
 
       {/* MOBILE MENU */}
       <div className={`fixed inset-0 z-40 ${isDark ? 'bg-[#030303]/95' : 'bg-[#FFF8E7]/95'} backdrop-blur-3xl flex flex-col items-center justify-center gap-8 transition-all duration-500 ${isMenuOpen ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none -translate-y-10'}`}>
-        {['Identity', 'AI Journey', 'Horizon'].map((item) => (
-          <a key={item} href={`#${item.toLowerCase().replace(' ', '')}`} onClick={() => setIsMenuOpen(false)} className={`${textPrimary} text-2xl font-black uppercase tracking-widest`}>
-            {item}
+        {[
+          { label: 'Identity', id: 'identity' },
+          { label: 'AI Journey', id: 'aijourney' },
+          { label: 'Horizon', id: 'horizon' },
+          { label: 'Built With AI', id: 'builtwith' },
+          { label: 'Contact', id: 'contact' },
+        ].map((item) => (
+          <a key={item.id} href={`#${item.id}`} onClick={() => setIsMenuOpen(false)} className={`${textPrimary} text-2xl font-black uppercase tracking-widest`}>
+            {item.label}
           </a>
         ))}
         <a href="/kunal-madaan.pdf" target="_blank" className="bg-violet-600 text-white px-8 py-4 rounded-full text-sm font-bold uppercase tracking-widest mt-4">Full Resume</a>
@@ -297,7 +309,7 @@ export default function OverlayUI({ theme, setTheme }) {
         </section>
 
         {/* SECTION: HOW THIS WAS BUILT — Maker's Manifesto */}
-        <section className="reveal mb-[20vh]">
+        <section id="builtwith" className="reveal mb-[20vh]">
           <div className="dynamic-card rounded-[3rem] overflow-hidden relative">
             <div className="h-1 w-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-teal-400" />
 
@@ -376,7 +388,7 @@ export default function OverlayUI({ theme, setTheme }) {
         </section>
 
         {/* SECTION 4: CONTACT */}
-        <section className="reveal flex flex-col items-center text-center gap-10">
+        <section id="contact" className="reveal flex flex-col items-center text-center gap-10">
           {/* FIX 6: Stronger contact headline */}
           <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} tracking-tight`}>Let's build something<br />that actually scales.</h2>
           <p className={`${textSecondary} text-lg max-w-xl`}>Open to Senior BSA, AI Product Owner, and GenAI Consultant roles. Based in Bengaluru — open to remote.</p>
