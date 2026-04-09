@@ -90,10 +90,10 @@ export default function OverlayUI({ theme, setTheme }) {
             <div className={`absolute inset-0 opacity-20 pointer-events-none ${isDark ? 'bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10' : 'bg-gradient-to-br from-violet-400/5 to-fuchsia-400/5'}`} />
 
             <div className="relative z-10 flex flex-col items-center gap-6">
-              <span className={`${isDark ? 'text-violet-400' : 'text-violet-700'} font-mono text-sm tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA & AI Architect</span>
+              <span className={`${isDark ? 'text-violet-400' : 'text-violet-700'} font-mono text-base md:text-lg tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA & AI Architect</span>
 
               {/* FIX 1: Stronger, more specific hero headline */}
-              <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} leading-tight tracking-tight`}>I automate the work<br />that slows enterprises down.</h2>
+              <h2 className={`text-4xl md:text-5xl font-black ${textPrimary} leading-tight tracking-tight`}>I automate the work<br />that slows enterprises down.</h2>
 
               <p className={`${textSecondary} text-lg md:text-xl max-w-2xl leading-relaxed`}>
                 7+ years bridging legacy enterprise complexity and modern GenAI delivery. Certified Scrum Master (CSM®) and Product Owner (CSPO®) across Banking, Retail, Healthcare, and Insurance.
@@ -291,6 +291,75 @@ export default function OverlayUI({ theme, setTheme }) {
                     {i < 3 && <div className={`ml-auto w-px h-6 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />}
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION: HOW THIS WAS BUILT — Maker's Manifesto */}
+        <section className="reveal mb-[20vh]">
+          <div className="dynamic-card rounded-[3rem] overflow-hidden relative">
+            {/* Top accent bar */}
+            <div className="h-1 w-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-teal-400" />
+
+            <div className="p-10 md:p-16">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                <div>
+                  <span className={`font-mono text-xs font-bold uppercase tracking-widest ${isDark ? 'text-teal-400' : 'text-teal-700'}`}>Transparency Log</span>
+                  <h3 className={`text-4xl md:text-5xl font-black ${textPrimary} mt-3 tracking-tight leading-tight`}>I didn't buy this.<br />I built it.</h3>
+                </div>
+                <p className={`${textSecondary} text-base max-w-sm leading-relaxed md:text-right`}>
+                  Every pixel, every component, every 3D particle — deliberately engineered. Here's the honest breakdown.
+                </p>
+              </div>
+
+              {/* Build stack — 4 cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+
+                <div className={`p-8 rounded-2xl ${isDark ? 'bg-violet-500/5 border border-violet-500/15' : 'bg-violet-500/5 border border-violet-500/20'}`}>
+                  <div className={`font-mono text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-violet-400' : 'text-violet-700'}`}>Step 01 — The Architect</div>
+                  <h4 className={`${textPrimary} text-xl font-black mb-3`}>Gemini as Co-Pilot, Not the Pilot</h4>
+                  <p className={`${textSecondary} text-sm leading-relaxed`}>
+                    I used Gemini to scaffold the initial structure and stress-test my component architecture. Every decision — the scroll-driven 3D camera, the glassmorphism layers, the dark/light theming — was mine. Gemini was the rubber duck. I was the engineer.
+                  </p>
+                </div>
+
+                <div className={`p-8 rounded-2xl ${isDark ? 'bg-fuchsia-500/5 border border-fuchsia-500/15' : 'bg-fuchsia-500/5 border border-fuchsia-500/20'}`}>
+                  <div className={`font-mono text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-fuchsia-400' : 'text-fuchsia-700'}`}>Step 02 — The Engine</div>
+                  <h4 className={`${textPrimary} text-xl font-black mb-3`}>React + Three.js + GSAP from Scratch</h4>
+                  <p className={`${textSecondary} text-sm leading-relaxed`}>
+                    4,000-particle spiral galaxy. Saturn rings with independent rotation axes. A GSAP ScrollTrigger that flies the camera from z=10 to z=−110 as you scroll. No template. No theme. Every geometry, every <span className="font-mono text-xs">useFrame</span> loop, every animation curve — written line by line.
+                  </p>
+                </div>
+
+                <div className={`p-8 rounded-2xl ${isDark ? 'bg-teal-500/5 border border-teal-500/15' : 'bg-teal-500/5 border border-teal-500/20'}`}>
+                  <div className={`font-mono text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-teal-400' : 'text-teal-700'}`}>Step 03 — The Lab</div>
+                  <h4 className={`${textPrimary} text-xl font-black mb-3`}>Gemma 4 31B Running Locally</h4>
+                  <p className={`${textSecondary} text-sm leading-relaxed`}>
+                    While building this, I was simultaneously running Gemma 4 31B IT on local hardware — evaluating it for offline enterprise documentation workflows. The portfolio isn't just a showcase. It's a working R&D environment.
+                  </p>
+                </div>
+
+                <div className={`p-8 rounded-2xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
+                  <div className={`font-mono text-xs font-bold uppercase tracking-widest mb-3 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>Step 04 — The Ship</div>
+                  <h4 className={`${textPrimary} text-xl font-black mb-3`}>GitHub → Vercel. Zero-Config Deploy.</h4>
+                  <p className={`${textSecondary} text-sm leading-relaxed`}>
+                    Version-controlled on GitHub, CI/CD deployed on Vercel. The same discipline I apply to enterprise release management — zero-defect, zero-drama — applied to my own stack.
+                  </p>
+                </div>
+              </div>
+
+              {/* Bottom manifesto line */}
+              <div className={`border-t pt-8 ${isDark ? 'border-white/10' : 'border-black/10'} flex flex-col md:flex-row items-center justify-between gap-4`}>
+                <p className={`font-mono text-sm ${isDark ? 'text-zinc-500' : 'text-slate-500'} leading-relaxed max-w-lg italic`}>
+                  "A BSA who can't build anything is just a Word document. I build the system, then I document it."
+                </p>
+                <div className="flex gap-3 flex-wrap justify-center md:justify-end">
+                  {['React', 'Three.js', 'GSAP', 'Tailwind', 'Gemini', 'Gemma 4', 'Vercel'].map((tag) => (
+                    <span key={tag} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${isDark ? 'bg-white/5 border border-white/10 text-zinc-400' : 'bg-black/5 border border-black/10 text-slate-600'}`}>{tag}</span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
