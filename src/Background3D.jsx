@@ -84,18 +84,22 @@ const SaturnRings = ({ isDark }) => {
   );
 };
 
-// FIXED: Brighter, more visible Asteroids
+// FIXED: Infinite looping, denser asteroid field forming a tunnel
 const AsteroidBelt = ({ isDark }) => {
   const meshRef = useRef();
-  const count = 150; 
+  const count = 300; 
   const dummy = useMemo(() => new THREE.Object3D(), []);
   
   const particles = useMemo(() => {
     const temp = [];
     for (let i = 0; i < count; i++) {
-      const x = -12 + (Math.random() - 0.5) * 8;
-      const y = (Math.random() - 0.5) * 20;
-      const z = 10 - Math.random() * 140; 
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 12 + Math.random() * 25; 
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      
+      const z = -Math.random() * 150; 
+      
       const scale = Math.random() * 0.8 + 0.2; 
       const rx = Math.random() * 0.02;
       const ry = Math.random() * 0.02;
@@ -105,10 +109,19 @@ const AsteroidBelt = ({ isDark }) => {
     return temp;
   }, [count]);
 
-  useFrame(() => {
-    const time = Date.now() * 0.0005;
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+    const cameraZ = state.camera.position.z;
+
     particles.forEach((particle, i) => {
-      dummy.position.set(particle.x, particle.y + Math.sin(time + i) * 0.5, particle.z);
+      let zOffset = (particle.z - cameraZ) % 150;
+      
+      if (zOffset > 10) zOffset -= 150;
+      if (zOffset < -140) zOffset += 150;
+
+      const finalZ = cameraZ + zOffset;
+
+      dummy.position.set(particle.x, particle.y + Math.sin(time + i) * 0.5, finalZ);
       dummy.rotation.set(time * particle.rx * 50, time * particle.ry * 50, time * particle.rz * 50);
       dummy.scale.set(particle.scale, particle.scale, particle.scale);
       dummy.updateMatrix();
@@ -120,14 +133,13 @@ const AsteroidBelt = ({ isDark }) => {
   return (
     <instancedMesh ref={meshRef} args={[null, null, count]}>
       <dodecahedronGeometry args={[0.5, 0]} />
-      {/* Switched to StandardMaterial with emissive glow so they are highly visible */}
       <meshStandardMaterial 
         color={isDark ? "#a78bfa" : "#94a3b8"} 
         emissive={isDark ? "#4c1d95" : "#475569"}
-        emissiveIntensity={0.5}
-        roughness={0.7} 
+        emissiveIntensity={0.6}
+        roughness={0.5} 
         transparent 
-        opacity={0.8} 
+        opacity={0.9} 
       />
     </instancedMesh>
   );
