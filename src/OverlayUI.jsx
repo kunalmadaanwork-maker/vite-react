@@ -7,7 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function OverlayUI({ theme, setTheme }) {
   const [copied, setCopied] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isDark = theme === 'dark';
 
   const copyEmail = async () => {
@@ -41,6 +41,7 @@ export default function OverlayUI({ theme, setTheme }) {
         .dynamic-card:hover { border-color: rgba(124, 58, 237, 0.4); }
         .cursor-blink::after { content: '_'; animation: blink 1s step-start infinite; color: #7c3aed; }
         @keyframes blink { 50% { opacity: 0; } }
+        .metric-glow { text-shadow: 0 0 30px currentColor; }
       `}</style>
 
       {/* HEADER */}
@@ -80,55 +81,90 @@ export default function OverlayUI({ theme, setTheme }) {
       </div>
 
       <main className="w-full max-w-6xl flex flex-col px-6 md:px-12 pt-40 pb-60 relative">
-        
+
         {/* SECTION 1: IDENTITY */}
         <section id="identity" className="flex flex-col gap-12 mb-[40vh] reveal relative">
-          
-          {/* THE FIX: The Glossy, Highly-Opaque Hero Container */}
+
+          {/* HERO CARD */}
           <div className="dynamic-card p-10 md:p-16 rounded-[3rem] flex flex-col items-center text-center gap-6 w-full max-w-5xl mx-auto shadow-2xl relative overflow-hidden border-violet-500/20">
-            {/* Subtle inner glow for the glossy effect */}
             <div className={`absolute inset-0 opacity-20 pointer-events-none ${isDark ? 'bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10' : 'bg-gradient-to-br from-violet-400/5 to-fuchsia-400/5'}`} />
-            
+
             <div className="relative z-10 flex flex-col items-center gap-6">
-              <span className={`${isDark ? 'text-violet-400' : 'text-violet-700'} font-mono text-sm tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA</span>
-              <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} leading-tight tracking-tight`}>Bridging Data <br />To Enterprise Value.</h2>
+              <span className={`${isDark ? 'text-violet-400' : 'text-violet-700'} font-mono text-sm tracking-widest uppercase font-bold`}>Senior Techno-Functional BSA & AI Architect</span>
+
+              {/* FIX 1: Stronger, more specific hero headline */}
+              <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} leading-tight tracking-tight`}>I automate the work<br />that slows enterprises down.</h2>
+
               <p className={`${textSecondary} text-lg md:text-xl max-w-2xl leading-relaxed`}>
-                7+ years of experience bridging enterprise architecture and Agile delivery. Certified Scrum Master (CSM®) and Product Owner (CSPO®).
+                7+ years bridging legacy enterprise complexity and modern GenAI delivery. Certified Scrum Master (CSM®) and Product Owner (CSPO®) across Banking, Retail, Healthcare, and Insurance.
               </p>
-              
-              <div className="flex flex-wrap justify-center gap-4 mt-6">
+
+              {/* FIX 2: Added key metric right in the hero */}
+              <div className={`flex gap-8 mt-2 px-8 py-4 rounded-2xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
+                <div className="text-center">
+                  <div className={`text-3xl font-black metric-glow ${isDark ? 'text-teal-400' : 'text-teal-600'}`}>70%</div>
+                  <div className={`${textSecondary} text-[10px] uppercase font-bold mt-1 tracking-widest`}>FSD Time Saved</div>
+                </div>
+                <div className={`w-px ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                <div className="text-center">
+                  <div className={`text-3xl font-black metric-glow ${isDark ? 'text-violet-400' : 'text-violet-600'}`}>80%+</div>
+                  <div className={`${textSecondary} text-[10px] uppercase font-bold mt-1 tracking-widest`}>Structure Match</div>
+                </div>
+                <div className={`w-px ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+                <div className="text-center">
+                  <div className={`text-3xl font-black metric-glow ${isDark ? 'text-fuchsia-400' : 'text-fuchsia-600'}`}>7+</div>
+                  <div className={`${textSecondary} text-[10px] uppercase font-bold mt-1 tracking-widest`}>Years Enterprise</div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-4 mt-2">
                 <span className={`px-5 py-2.5 rounded-xl border ${isDark ? 'border-violet-500/30 bg-violet-500/10 text-violet-300' : 'border-violet-600/40 bg-violet-600/15 text-violet-900'} text-xs font-bold tracking-widest flex items-center gap-2 shadow-[0_0_15px_rgba(124,58,237,0.1)]`}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> CSM® & CSPO®
                 </span>
                 <span className={`px-5 py-2.5 rounded-xl border ${isDark ? 'border-zinc-500/30 bg-white/5 text-zinc-300' : 'border-slate-500/40 bg-slate-900/10 text-slate-900'} text-xs font-bold tracking-widest flex items-center gap-2`}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> GenAI Foundations
                 </span>
+                <span className={`px-5 py-2.5 rounded-xl border ${isDark ? 'border-teal-500/30 bg-teal-500/10 text-teal-300' : 'border-teal-600/40 bg-teal-600/15 text-teal-900'} text-xs font-bold tracking-widest flex items-center gap-2`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> RAG Architect
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Job History Cards */}
+          {/* FIX 3: Job History Cards — fixed markdown bold, added metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <div className="dynamic-card p-8 rounded-3xl">
+            <div className="dynamic-card p-8 rounded-3xl flex flex-col gap-3">
               <span className="text-violet-500 font-mono text-xs font-bold uppercase tracking-widest">Dec 2023 — Present</span>
-              <h3 className={`${textPrimary} text-2xl font-black mt-2`}>Epsilon</h3>
-              <p className={`${textSecondary} text-sm mt-4 leading-relaxed`}>
-                Driving transformation for **Tier-1 Financial Leaders** and **Global Retailers**, specializing in AI pipelines and deep-dive data audits.
+              <h3 className={`${textPrimary} text-2xl font-black`}>Epsilon</h3>
+              <p className={`${textSecondary} text-sm leading-relaxed`}>
+                Driving AI transformation for <strong>Tier-1 Financial Leaders</strong> and <strong>Global Retailers</strong> — specializing in RAG pipelines and deep SQL data audits.
               </p>
+              <div className={`mt-auto pt-4 border-t ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+                <span className={`text-teal-500 font-black text-lg`}>70%</span>
+                <span className={`${textSecondary} text-xs font-bold uppercase ml-2`}>FSD turnaround cut</span>
+              </div>
             </div>
-            <div className="dynamic-card p-8 rounded-3xl">
+            <div className="dynamic-card p-8 rounded-3xl flex flex-col gap-3">
               <span className="text-violet-500 font-mono text-xs font-bold uppercase tracking-widest">Nov 2021 — Oct 2023</span>
-              <h3 className={`${textPrimary} text-2xl font-black mt-2`}>NTT Data</h3>
-              <p className={`${textSecondary} text-sm mt-4 leading-relaxed`}>
-                Engineered an ML-driven Fraud Detection POC, translating complex insurance workflows into predictive data models.
+              <h3 className={`${textPrimary} text-2xl font-black`}>NTT Data</h3>
+              <p className={`${textSecondary} text-sm leading-relaxed`}>
+                Engineered an <strong>ML Fraud Detection POC</strong> and owned the full requirements lifecycle for <strong>US Healthcare</strong> radiology systems.
               </p>
+              <div className={`mt-auto pt-4 border-t ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+                <span className={`text-fuchsia-500 font-black text-lg`}>2</span>
+                <span className={`${textSecondary} text-xs font-bold uppercase ml-2`}>Enterprise domains</span>
+              </div>
             </div>
-            <div className="dynamic-card p-8 rounded-3xl">
+            <div className="dynamic-card p-8 rounded-3xl flex flex-col gap-3">
               <span className="text-violet-500 font-mono text-xs font-bold uppercase tracking-widest">Aug 2018 — May 2021</span>
-              <h3 className={`${textPrimary} text-2xl font-black mt-2`}>Crestech Systems</h3>
-              <p className={`${textSecondary} text-sm mt-4 leading-relaxed`}>
-                Directed end-to-end QA for **Major Insurance product streams**, ensuring 100% data integrity across mobile and web platforms.
+              <h3 className={`${textPrimary} text-2xl font-black`}>Crestech Systems</h3>
+              <p className={`${textSecondary} text-sm leading-relaxed`}>
+                Directed end-to-end QA for <strong>Max Life Insurance</strong> product streams, ensuring <strong>100% data integrity</strong> across mobile and web platforms.
               </p>
+              <div className={`mt-auto pt-4 border-t ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+                <span className={`text-violet-500 font-black text-lg`}>100%</span>
+                <span className={`${textSecondary} text-xs font-bold uppercase ml-2`}>Release integrity</span>
+              </div>
             </div>
           </div>
         </section>
@@ -141,15 +177,15 @@ export default function OverlayUI({ theme, setTheme }) {
                 <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest ${isDark ? 'bg-violet-500/10 text-violet-400' : 'bg-violet-600/15 text-violet-800'}`}>Enterprise RAG Architecture</span>
                 <h3 className={`${textPrimary} text-3xl font-black mt-6 mb-4 tracking-tight`}>Multi-Stage AI Pipeline</h3>
                 <p className={`${textSecondary} text-lg leading-relaxed mb-6`}>
-                  Engineered a hallucination-free documentation pipeline. Leveraged Enterprise Copilot to feed a secure Knowledge Base fortified with strict guardrails.
+                  Engineered a hallucination-free documentation pipeline at RBC. Leveraged Enterprise Copilot to feed a secure Knowledge Base fortified with strict guardrails — turning a 6-day manual process into a 2-day automated one.
                 </p>
                 <div className="flex gap-8">
                   <div>
-                    <div className="text-teal-500 text-4xl font-black">80%</div>
+                    <div className={`text-teal-500 text-4xl font-black metric-glow`}>80%</div>
                     <div className={`${textSecondary} text-xs uppercase font-bold mt-1`}>Structure Match</div>
                   </div>
                   <div>
-                    <div className="text-violet-500 text-4xl font-black">70%</div>
+                    <div className={`text-violet-500 text-4xl font-black metric-glow`}>70%</div>
                     <div className={`${textSecondary} text-xs uppercase font-bold mt-1`}>Time Saved</div>
                   </div>
                 </div>
@@ -191,31 +227,81 @@ export default function OverlayUI({ theme, setTheme }) {
         </section>
 
         {/* SECTION 3: HORIZON */}
-        <section id="horizon" className={`reveal dynamic-card p-12 rounded-3xl text-center mb-[40vh] border-dashed ${isDark ? 'border-violet-500/20' : 'border-violet-500/40'}`}>
-          <h3 className={`text-3xl font-black ${textPrimary} mb-8`}>Generative AI R&D Sandbox</h3>
-          <div className="flex flex-wrap justify-center gap-6 mb-12">
-            <div className="group relative">
-              <span className={`px-6 py-3 rounded-full border text-sm font-bold uppercase cursor-help transition-all ${isDark ? 'bg-violet-500/10 border-violet-500/30 text-violet-400 hover:bg-violet-500/20' : 'bg-violet-600/15 border-violet-600/40 text-violet-800 hover:bg-violet-600/25'}`}>Gemma 4 31B IT</span>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-violet-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-xs text-zinc-300 p-6 leading-relaxed shadow-xl">
-                Evaluating open-weight models for secure, offline documentation workflows without cloud data leakage.
+        <section id="horizon" className="flex flex-col gap-10 mb-[40vh]">
+
+          {/* FIX 4: Existing GenAI Sandbox card — unchanged visually */}
+          <div className={`reveal dynamic-card p-12 rounded-3xl text-center border-dashed ${isDark ? 'border-violet-500/20' : 'border-violet-500/40'}`}>
+            <h3 className={`text-3xl font-black ${textPrimary} mb-8`}>Generative AI R&D Sandbox</h3>
+            <div className="flex flex-wrap justify-center gap-6 mb-12">
+              <div className="group relative">
+                <span className={`px-6 py-3 rounded-full border text-sm font-bold uppercase cursor-help transition-all ${isDark ? 'bg-violet-500/10 border-violet-500/30 text-violet-400 hover:bg-violet-500/20' : 'bg-violet-600/15 border-violet-600/40 text-violet-800 hover:bg-violet-600/25'}`}>Gemma 4 31B IT</span>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-violet-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-xs text-zinc-300 p-6 leading-relaxed shadow-xl z-10">
+                  Evaluating open-weight models for secure, offline documentation workflows without cloud data leakage.
+                </div>
+              </div>
+              <div className="group relative">
+                <span className={`px-6 py-3 rounded-full border text-sm font-bold uppercase cursor-help transition-all ${isDark ? 'bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/20' : 'bg-fuchsia-600/15 border-fuchsia-600/40 text-fuchsia-800 hover:bg-fuchsia-600/25'}`}>Local LLM Parity</span>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-fuchsia-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-xs text-zinc-300 p-6 leading-relaxed shadow-xl z-10">
+                  Achieving Enterprise Copilot parity on local hardware — zero API cost, zero data leakage risk.
+                </div>
               </div>
             </div>
-            <div className="group relative">
-              <span className={`px-6 py-3 rounded-full border text-sm font-bold uppercase cursor-help transition-all ${isDark ? 'bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500/20' : 'bg-fuchsia-600/15 border-fuchsia-600/40 text-fuchsia-800 hover:bg-fuchsia-600/25'}`}>n8n Automation</span>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-72 h-40 bg-black/95 rounded-xl border border-fuchsia-500/40 opacity-0 group-hover:opacity-100 transition-all pointer-events-none flex items-center justify-center text-xs text-zinc-300 p-6 leading-relaxed shadow-xl">
-                Prototyping automated data-parsing pipelines to replace manual SQL reconciliation tasks.
+            <p className={`${textSecondary} text-xl max-w-2xl mx-auto italic font-mono cursor-blink`}>
+              "Converting unstructured whiteboard notes into standardized BDD User Stories".
+            </p>
+          </div>
+
+          {/* FIX 5: NEW — n8n AI Job Hunt Pipeline card */}
+          <div className="reveal dynamic-card p-10 md:p-14 rounded-[3rem] border-teal-500/20 relative overflow-hidden">
+            {/* Subtle background glow */}
+            <div className={`absolute inset-0 opacity-10 pointer-events-none bg-gradient-to-br ${isDark ? 'from-teal-500/20 to-violet-500/10' : 'from-teal-400/10 to-violet-400/5'}`} />
+
+            <div className="relative z-10 flex flex-col md:flex-row gap-12 items-start">
+              <div className="flex-1">
+                <span className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest ${isDark ? 'bg-teal-500/10 text-teal-400' : 'bg-teal-600/15 text-teal-800'}`}>Agentic Workflow Engineering</span>
+                <h3 className={`${textPrimary} text-3xl font-black mt-6 mb-4 tracking-tight`}>AI-Powered Job Hunt Machine</h3>
+                <p className={`${textSecondary} text-lg leading-relaxed mb-6`}>
+                  I don't just work in AI — I use AI to get my next role. Built an end-to-end n8n pipeline: feed it a job description, and while I sleep, it scores the match, rewrites my resume bullets to mirror the role's exact ROI language, and surfaces the hiring manager's contact.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {['n8n', 'Claude API', 'Webhook Triggers', 'ATS Scoring', 'Auto-Prospecting'].map((tag) => (
+                    <span key={tag} className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider ${isDark ? 'bg-teal-500/10 border border-teal-500/20 text-teal-400' : 'bg-teal-600/10 border border-teal-600/20 text-teal-800'}`}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pipeline visual */}
+              <div className="flex-1 w-full flex flex-col gap-3">
+                {[
+                  { step: '01', label: 'Job Description', sub: 'Webhook ingestion', color: 'violet' },
+                  { step: '02', label: 'ATS Match Score', sub: 'Claude API scoring', color: 'fuchsia' },
+                  { step: '03', label: 'Resume Rewrite', sub: 'Dynamic bullet points', color: 'teal' },
+                  { step: '04', label: 'Hiring Manager', sub: 'Auto-prospecting', color: 'teal' },
+                ].map((item, i) => (
+                  <div key={i} className={`flex items-center gap-4 p-4 rounded-xl ${isDark ? 'bg-white/5 border border-white/5' : 'bg-black/5 border border-black/5'}`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-mono font-black text-xs flex-shrink-0 ${
+                      item.color === 'violet' ? (isDark ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-500/15 text-violet-700') :
+                      item.color === 'fuchsia' ? (isDark ? 'bg-fuchsia-500/20 text-fuchsia-400' : 'bg-fuchsia-500/15 text-fuchsia-700') :
+                      (isDark ? 'bg-teal-500/20 text-teal-400' : 'bg-teal-500/15 text-teal-700')
+                    }`}>{item.step}</div>
+                    <div>
+                      <div className={`${textPrimary} font-black text-sm`}>{item.label}</div>
+                      <div className={`${textSecondary} text-xs font-bold uppercase tracking-wider`}>{item.sub}</div>
+                    </div>
+                    {i < 3 && <div className={`ml-auto w-px h-6 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-          <p className={`${textSecondary} text-xl max-w-2xl mx-auto italic font-mono cursor-blink`}>
-            "Converting unstructured whiteboard notes into standardized BDD User Stories".
-          </p>
         </section>
 
         {/* SECTION 4: CONTACT */}
         <section className="reveal flex flex-col items-center text-center gap-10">
-          <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} tracking-tight`}>Ready for the next frontier?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl mt-6">
+          {/* FIX 6: Stronger contact headline */}
+          <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} tracking-tight`}>Let's build something<br />that actually scales.</h2>
+          <p className={`${textSecondary} text-lg max-w-xl`}>Open to Senior BSA, AI Product Owner, and GenAI Consultant roles. Based in Bengaluru — open to remote.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl mt-2">
             <a href="https://www.linkedin.com/in/kunal-madaan-bsa/" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl dynamic-card hover:bg-violet-500/5 transition-all ${textPrimary} font-bold text-lg`}>LinkedIn</a>
             <button onClick={copyEmail} className={`p-6 rounded-2xl border transition-all font-bold text-lg ${copied ? 'bg-violet-500/20 border-violet-500 text-violet-500' : `dynamic-card border-transparent ${textPrimary}`}`}>
               {copied ? "Copied Email!" : "Copy Email"}
