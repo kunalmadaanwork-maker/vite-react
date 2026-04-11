@@ -10,26 +10,33 @@ export default function App() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    document.body.style.backgroundColor = theme === 'dark' ? '#030303' : '#FFF8E7'; [cite: 4]
+    // Immediate background color fix to prevent white flashes
+    document.body.style.backgroundColor = theme === 'dark' ? '#030303' : '#FFF8E7';
+    document.body.style.margin = '0';
+    document.body.style.overflowX = 'hidden';
   }, [theme]);
 
   return (
     <>
-      {!isLoaded && <LoadingScreen onComplete={() => setIsLoaded(true)} />} [cite: 5]
+      {!isLoaded && <LoadingScreen onComplete={() => setIsLoaded(true)} />}
       
       <ReactLenis root>
         <div
-          className={`relative min-h-screen w-full overflow-x-hidden selection:bg-violet-500/30 ${
+          className={`relative min-h-screen w-full overflow-x-hidden transition-colors duration-1000 selection:bg-violet-500/30 ${
             theme === 'dark' ? 'bg-[#030303]' : 'bg-[#FFF8E7]'
           }`}
-          style={{ opacity: isLoaded ? [cite_start]1 : 0, transition: 'opacity 0.8s ease-in-out' }} [cite: 6]
+          style={{ 
+            opacity: isLoaded ? 1 : 0, 
+            transition: 'opacity 0.8s ease-in-out' 
+          }}
         >
+          {/* Background Layer: 3D Canvas */}
           <div className="fixed top-0 left-0 w-full h-full z-0 pointer-events-none">
-            <Background3D theme={theme} /> [cite: 6]
+            <Background3D theme={theme} />
           </div>
 
-          {/* FIX: pointer-events-none allows galaxy hover interaction while UI stays visible */}
-          <div className="relative z-10 w-full pointer-events-none"> 
+          {/* UI Layer: pointer-events-none allows galaxy hover to work */}
+          <div className="relative z-10 w-full pointer-events-none">
             <OverlayUI theme={theme} setTheme={setTheme} />
           </div>
         </div>
