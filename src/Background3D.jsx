@@ -14,6 +14,7 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ─── Quality Detection ────────────────────────────────────────────────────────
 const getQualityTier = () => {
   const memory = navigator.deviceMemory || 4;
   const cores = navigator.hardwareConcurrency || 4;
@@ -23,21 +24,25 @@ const getQualityTier = () => {
   return 'high';
 };
 
+// ─── TEXTURE GENERATOR: Turns square pixels into soft glowing orbs ───
 const createCircleTexture = () => {
   const canvas = document.createElement('canvas');
   canvas.width = 64;
   canvas.height = 64;
   const ctx = canvas.getContext('2d');
   const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  
   gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
   gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)');
   gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.3)');
   gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 64, 64);
   return new THREE.CanvasTexture(canvas);
 };
 
+// ─── WARP TUNNEL: Continuous particle flow with Inner/Outer layers ───
 const WarpTunnel = ({ isDark, quality }) => {
   const orbTexture = useMemo(() => createCircleTexture(), []);
   const count = quality === 'high' ? 25000 : 12000;
@@ -53,7 +58,6 @@ const WarpTunnel = ({ isDark, quality }) => {
       pos[i * 3 + 1] = Math.sin(angle) * radius;
       pos[i * 3 + 2] = z;
       const color = new THREE.Color();
-      // LIGHT THEME: Using Deep Slate/Indigo for contrast
       color.set(isDark ? (Math.random() > 0.9 ? '#C084FC' : '#ffffff') : (Math.random() > 0.5 ? '#1E293B' : '#4338CA'));
       col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
     }
@@ -74,7 +78,7 @@ const WarpTunnel = ({ isDark, quality }) => {
         map={orbTexture} 
         vertexColors 
         transparent 
-        opacity={isDark ? 0.6 : 0.8} // Higher opacity for light mode
+        opacity={isDark ? 0.6 : 0.8} 
         sizeAttenuation 
         depthWrite={false} 
         blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending} 
@@ -83,6 +87,7 @@ const WarpTunnel = ({ isDark, quality }) => {
   );
 };
 
+// ─── GALAXY CORE: Interactive focal point ───
 const GalaxyCore = ({ isDark, quality }) => {
   const pointsRef = useRef();
   const orbTexture = useMemo(() => createCircleTexture(), []);
@@ -120,7 +125,6 @@ const GalaxyCore = ({ isDark, quality }) => {
       pos[i * 3 + 1] = scatterY;
       pos[i * 3 + 2] = Math.sin(angle) * r + scatter;
       const color = new THREE.Color();
-      // LIGHT THEME: Saturated darks for anti-star effect
       if (r < 15) color.set(isDark ? '#FFFDE7' : '#111827');
       else if (r < 45) color.set(isDark ? (Math.random() > 0.5 ? '#90CAF9' : '#FFCC80') : (Math.random() > 0.5 ? '#312E81' : '#4C1D95'));
       else color.set(isDark ? '#9C27B0' : '#1E1B4B');
@@ -203,7 +207,7 @@ const NebulaWall = ({ position, color, scale }) => {
   );
 };
 
-const AsteroidBelt = ({ position, color }) => {
+const AsteroidBelt = ({ position, color, isDark }) => {
   const orbTexture = useMemo(() => createCircleTexture(), []);
   const count = 2000;
   const points = useMemo(() => {
@@ -234,7 +238,7 @@ const AsteroidBelt = ({ position, color }) => {
           depthWrite={false} 
           blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending} 
         />
-      </group>
+      </points>
     </group>
   );
 };
@@ -312,15 +316,16 @@ export default function Background3D({ theme }) {
         <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 200]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
+        
         <WarpTunnel isDark={isDark} quality={quality} />
         <RocketCamera />
         <HeroGlow isDark={isDark} />
         <GalaxyCore isDark={isDark} quality={quality} />
         <NebulaWall position={[-10, 0, -40]} scale={[40, 40, 40]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
-        <AsteroidBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} />
+        <AsteroidBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} isDark={isDark} />
         <NebulaWall position={[0, 0, -80]} scale={[60, 40, 60]} color={isDark ? '#3B82F6' : '#BFDBFE'} />
         <NebulaWall position={[10, 0, -100]} scale={[40, 40, 40]} color={isDark ? '#0D9488' : '#CCFBF1'} />
-        <AsteroidBelt position={[0, 0, -120]} color={isDark ? '#2DD4BF' : '#0D9488'} />
+        <AsteroidBelt position={[0, 0, -120]} color={isDark ? '#2DD4BF' : '#0D9488'} isDark={isDark} />
         <SpaceObjects isDark={isDark} />
       </Suspense>
     </Canvas>
