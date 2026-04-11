@@ -23,26 +23,30 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── SUBTLE BACKGROUND: The "Glue" that prevents a total black screen ───
-const BackgroundDust = ({ isDark }) => {
-  const points = useMemo(() => {
-    const count = 4000;
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 200;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 200;
-      pos[i * 3 + 2] = Math.random() * -200 + 20;
+// ─── COSMIC VEINS: Long streaks of light that fix the "Void" feeling ───
+const CosmicVeins = ({ isDark }) => {
+  const veins = useMemo(() => {
+    const data = [];
+    for (let i = 0; i < 12; i++) {
+      data.push({
+        pos: [(Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, 0],
+        color: isDark ? (Math.random() > 0.5 ? '#7C3AED' : '#2DD4BF') : '#94A3B8',
+        rot: [Math.random() * Math.PI, Math.random() * Math.PI, 0],
+        scale: [0.1, 0.1, 150], // Very long, thin needles
+      });
     }
-    return pos;
-  }, []);
+    return data;
+  }, [isDark]);
 
   return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={points.length / 3} array={points} itemSize={3} />
-      </bufferGeometry>
-      <pointsMaterial size={0.04} color={isDark ? '#ffffff' : '#94A3B8'} transparent opacity={0.2} sizeAttenuation />
-    </points>
+    <group>
+      {veins.map((v, i) => (
+        <mesh key={i} position={v.pos} rotation={v.rot} scale={v.scale}>
+          <cylinderGeometry args={[0.02, 0.02, 1]} />
+          <meshBasicMaterial color={v.color} transparent opacity={0.15} blending={THREE.AdditiveBlending} />
+        </mesh>
+      ))}
+    </group>
   );
 };
 
@@ -157,7 +161,7 @@ const NebulaCloud = ({ position, color, scale }) => {
   return (
     <mesh ref={ref} position={position} scale={scale}>
       <icosahedronGeometry args={[1, 4]} />
-      <MeshDistortMaterial distort={0.5} speed={2} radius={1} color={color} transparent opacity={0.08} />
+      <MeshDistortMaterial distort={0.6} speed={2} radius={1} color={color} transparent opacity={0.1} />
     </mesh>
   );
 };
@@ -191,7 +195,6 @@ const AsteroidBelt = ({ position, color }) => {
 const SpaceObjects = ({ isDark }) => {
   return (
     <group>
-      {/* Final Destination: The Light at the end of the tunnel */}
       <Float position={[0, 0, -140]} speed={2} floatIntensity={1}>
         <mesh>
           <icosahedronGeometry args={[10, 4]} />
@@ -254,28 +257,31 @@ export default function Background3D({ theme }) {
     <Canvas dpr={quality === 'high' ? [1, 2] : [1, 1]} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <Suspense fallback={null}>
         <color attach="background" args={[isDark ? '#030303' : '#FFF8E7']} />
-        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 20, 250]} />
+        {/* TIGHTENED FOG: Creates a more seamless transition between assets */}
+        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 180]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
         
-        <BackgroundDust isDark={isDark} />
+        {/* GLOBAL CONNECTORS: Always visible to remove the "nothingness" */}
+        <CosmicVeins isDark={isDark} />
         <RocketCamera />
         <HeroGlow isDark={isDark} />
         
-        {/* BEAT 1: High Density Start */}
+        {/* BEAT 1: Hero Cluster */}
         <GalaxyCore isDark={isDark} quality={quality} />
 
-        {/* BEAT 2: First Feature Zone (AI Journey) */}
-        <NebulaCloud position={[-20, 5, -45]} scale={[20, 10, 15]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
-        <AsteroidBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} />
+        {/* BEAT 2: AI Journey Cluster - Moved closer to core to avoid gap */}
+        <NebulaCloud position={[-20, 5, -40]} scale={[30, 15, 20]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
+        <AsteroidBelt position={[0, 0, -55]} color={isDark ? '#C084FC' : '#A78BFA'} />
 
-        {/* BEAT 3: THE VOID (Horizon) - No assets here, just BackgroundDust and Camera Movement */}
+        {/* BEAT 3: Horizon Transition - Adding a "bridge" nebula here */}
+        <NebulaCloud position={[10, 0, -80]} scale={[40, 20, 30]} color={isDark ? '#3B82F6' : '#BFDBFE'} />
 
-        {/* BEAT 4: Second Feature Zone (Built With AI) */}
-        <NebulaCloud position={[20, -10, -100]} scale={[25, 15, 20]} color={isDark ? '#0D9488' : '#CCFBF1'} />
-        <AsteroidBelt position={[0, 0, -120]} color={isDark ? '#2DD4BF' : '#0D9488'} />
+        {/* BEAT 4: Built With AI Cluster */}
+        <NebulaCloud position={[20, -10, -100]} scale={[30, 15, 20]} color={isDark ? '#0D9488' : '#CCFBF1'} />
+        <AsteroidBelt position={[0, 0, -115]} color={isDark ? '#2DD4BF' : '#0D9488'} />
 
-        {/* BEAT 5: Dense Finale (Contact) */}
+        {/* BEAT 5: Finale */}
         <SpaceObjects isDark={isDark} />
       </Suspense>
     </Canvas>
