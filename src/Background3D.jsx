@@ -23,6 +23,35 @@ const getQualityTier = () => {
   return 'high';
 };
 
+// ─── GLOBAL STARFIELD: Fixes the "blank screen" in deep scroll ───
+const GlobalStarfield = ({ isDark }) => {
+  const stars = useMemo(() => {
+    const count = 5000;
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 200;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 200;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 300 - 50; // Spread deep into space
+    }
+    return pos;
+  }, []);
+
+  return (
+    <points>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={stars.length / 3} array={stars} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial 
+        size={0.1} 
+        color={isDark ? '#FFFFFF' : '#94A3B8'} 
+        transparent 
+        opacity={0.4} 
+        sizeAttenuation 
+      />
+    </points>
+  );
+};
+
 const GalaxyCore = ({ isDark, quality }) => {
   const pointsRef = useRef();
   const originalPositions = useRef(null);
@@ -70,6 +99,9 @@ const GalaxyCore = ({ isDark, quality }) => {
     const curr = currentPositions.current;
     const vel = velocities.current;
 
+    // FIX: Interaction Plane
+    // We project the mouse to a plane that stays 20 units in front of the camera
+    const planeZ = state.camera.position.z - 20;
     const mouseX = state.pointer.x * 60; 
     const mouseY = state.pointer.y * 30;
 
@@ -80,14 +112,18 @@ const GalaxyCore = ({ isDark, quality }) => {
 
     for (let i = 0; i < count; i++) {
       const ix = i * 3, iy = i * 3 + 1, iz = i * 3 + 2;
+      
+      // Calculate distance relative to camera-relative mouse coordinates
       const dx = curr[ix] - mouseX;
       const dy = curr[iy] - mouseY;
-      const dist2D = Math.sqrt(dx * dx + dy * dy);
+      const dz = curr[iz] - planeZ;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-      if (dist2D < influenceRadius && dist2D > 0.1) {
-        const force = (influenceRadius - dist2D) / influenceRadius;
-        vel[ix] += (dx / dist2D) * force * repelStrength;
-        vel[iy] += (dy / dist2D) * force * repelStrength;
+      if (dist < influenceRadius && dist > 0.1) {
+        const force = (influenceRadius - dist) / influenceRadius;
+        vel[ix] += (dx / dist) * force * repelStrength;
+        vel[iy] += (dy / dist) * force * repelStrength;
+        vel[iz] += (dz / dist) * force * repelStrength;
       }
 
       vel[ix] *= drag; vel[iy] *= drag; vel[iz] *= drag;
@@ -192,12 +228,16 @@ const SpaceObjects = ({ isDark, quality }) => {
         <pointsMaterial size={0.07} color={isDark ? '#818CF8' : '#6366F1'} transparent opacity={0.45} sizeAttenuation depthWrite={false} />
       </points>
 
-      <Float position={[0, 0, -130]} speed={2} floatIntensity={1}>
+      {/* FINAL DESTINATION: High-visibility core for contact section */}
+      <Float position={[0, 0, -140]} speed={2} floatIntensity={1}>
         <mesh>
-          <icosahedronGeometry args={[6, 4]} />
-          <MeshTransmissionMaterial transmission={1} thickness={2} roughness={0} chromaticAberration={0.5} color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.4} />
+          <icosahedronGeometry args={[8, 4]} />
+          <MeshTransmissionMaterial 
+            transmission={1} thickness={2} roughness={0} chromaticAberration={0.5}
+            color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.5}
+          />
         </mesh>
-        <pointLight intensity={10} color="#C084FC" distance={30} />
+        <pointLight intensity={15} color="#C084FC" distance={50} />
       </Float>
     </group>
   );
@@ -210,12 +250,13 @@ const RocketCamera = () => {
     const tl = gsap.timeline({
       scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
     });
-    tl.to(cameraRef.current.position, { z: -130, x: 0, y: 0, ease: 'none' }, 0)
+    // extended the journey to -145 to ensure we fly THROUGH the final core
+    tl.to(cameraRef.current.position, { z: -145, x: 0, y: 0, ease: 'none' }, 0)
       .to(cameraRef.current.rotation, { z: 0.05, ease: 'none' }, 0)
       .to(cameraRef.current.rotation, { z: -0.05, ease: 'none' }, 0.5)
       .to(cameraRef.current.rotation, { z: 0, ease: 'none' }, 1);
   }, []);
-  return <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 15]} fov={75} near={0.1} far={200} />;
+  return <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 15]} fov={75} near={0.1} far={250} />;
 };
 
 const HeroGlow = ({ isDark }) => {
@@ -258,13 +299,14 @@ export default function Background3D({ theme }) {
   return (
     <Canvas dpr={quality === 'high' ? [1, 2] : [1, 1]} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <Suspense fallback={null}>
-        {/* STABILIZED: Using color tag instead of useThree hook */}
         <color attach="background" args={[isDark ? '#030303' : '#FFF8E7']} />
-        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 20, 150]} />
+        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 20, 200]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
         <pointLight position={[-20, 10, -50]} intensity={isDark ? 2 : 1} color={isDark ? '#FB923C' : '#D97706'} />
         <pointLight position={[15, -5, -85]} intensity={isDark ? 1.5 : 0.8} color={isDark ? '#2DD4BF' : '#0D9488'} />
+        
+        <GlobalStarfield isDark={isDark} />
         <RocketCamera />
         <HeroGlow isDark={isDark} />
         <GalaxyCore isDark={isDark} quality={quality} />
