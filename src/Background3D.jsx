@@ -23,14 +23,6 @@ const getQualityTier = () => {
   return 'high';
 };
 
-const SceneBackground = ({ isDark }) => {
-  const { scene } = useThree();
-  React.useEffect(() => {
-    scene.background = new THREE.Color(isDark ? '#030303' : '#FFF8E7');
-  }, [isDark, scene]);
-  return null;
-};
-
 const GalaxyCore = ({ isDark, quality }) => {
   const pointsRef = useRef();
   const originalPositions = useRef(null);
@@ -78,7 +70,6 @@ const GalaxyCore = ({ isDark, quality }) => {
     const curr = currentPositions.current;
     const vel = velocities.current;
 
-    // FIX: Map pointer to a range that matches the galaxy's world scale
     const mouseX = state.pointer.x * 60; 
     const mouseY = state.pointer.y * 30;
 
@@ -136,34 +127,20 @@ const NebulaClouds = ({ isDark, quality }) => {
 
   return (
     <>
-      {/* Organic Violet Nebula */}
       <mesh ref={ref1} position={[-18, 4, -35]} scale={[1.5, 0.8, 1.2]}>
         <icosahedronGeometry args={[16, 4]} />
-        <MeshDistortMaterial 
-          distort={0.4} speed={2} radius={1}
-          color={isDark ? '#7C3AED' : '#DDD6FE'} transparent opacity={0.12} 
-        />
+        <MeshDistortMaterial distort={0.4} speed={2} radius={1} color={isDark ? '#7C3AED' : '#DDD6FE'} transparent opacity={0.12} />
       </mesh>
-
-      {/* Organic Amber Nebula */}
       {quality !== 'low' && (
         <mesh ref={ref2} position={[22, -6, -65]} scale={[1.2, 1.4, 0.9]}>
           <icosahedronGeometry args={[20, 4]} />
-          <MeshDistortMaterial 
-            distort={0.5} speed={1.5} radius={1}
-            color={isDark ? '#D97706' : '#FDE68A'} transparent opacity={0.10} 
-          />
+          <MeshDistortMaterial distort={0.5} speed={1.5} radius={1} color={isDark ? '#D97706' : '#FDE68A'} transparent opacity={0.10} />
         </mesh>
       )}
-
-      {/* Organic Teal Nebula */}
       {quality !== 'low' && (
         <mesh ref={ref3} position={[0, 8, -95]} scale={[1.8, 0.7, 1.3]}>
           <icosahedronGeometry args={[22, 4]} />
-          <MeshDistortMaterial 
-            distort={0.3} speed={2.5} radius={1}
-            color={isDark ? '#0D9488' : '#CCFBF1'} transparent opacity={0.08} 
-          />
+          <MeshDistortMaterial distort={0.3} speed={2.5} radius={1} color={isDark ? '#0D9488' : '#CCFBF1'} transparent opacity={0.08} />
         </mesh>
       )}
     </>
@@ -215,14 +192,10 @@ const SpaceObjects = ({ isDark, quality }) => {
         <pointsMaterial size={0.07} color={isDark ? '#818CF8' : '#6366F1'} transparent opacity={0.45} sizeAttenuation depthWrite={false} />
       </points>
 
-      {/* FINAL DESTINATION: Light source for Contact Section */}
       <Float position={[0, 0, -130]} speed={2} floatIntensity={1}>
-        <mesh scale={[1, 1, 1]}>
+        <mesh>
           <icosahedronGeometry args={[6, 4]} />
-          <MeshTransmissionMaterial 
-            transmission={1} thickness={2} roughness={0} chromaticAberration={0.5}
-            color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.4}
-          />
+          <MeshTransmissionMaterial transmission={1} thickness={2} roughness={0} chromaticAberration={0.5} color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.4} />
         </mesh>
         <pointLight intensity={10} color="#C084FC" distance={30} />
       </Float>
@@ -232,26 +205,16 @@ const SpaceObjects = ({ isDark, quality }) => {
 
 const RocketCamera = () => {
   const cameraRef = useRef();
-
   useGSAP(() => {
     if (!cameraRef.current) return;
-
     const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: 'body',
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 2,
-      },
+      scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
     });
-
-    // Smooth linear journey without abrupt offsets
     tl.to(cameraRef.current.position, { z: -130, x: 0, y: 0, ease: 'none' }, 0)
       .to(cameraRef.current.rotation, { z: 0.05, ease: 'none' }, 0)
       .to(cameraRef.current.rotation, { z: -0.05, ease: 'none' }, 0.5)
       .to(cameraRef.current.rotation, { z: 0, ease: 'none' }, 1);
   }, []);
-
   return <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 15]} fov={75} near={0.1} far={200} />;
 };
 
@@ -295,7 +258,8 @@ export default function Background3D({ theme }) {
   return (
     <Canvas dpr={quality === 'high' ? [1, 2] : [1, 1]} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <Suspense fallback={null}>
-        <SceneBackground isDark={isDark} />
+        {/* STABILIZED: Using color tag instead of useThree hook */}
+        <color attach="background" args={[isDark ? '#030303' : '#FFF8E7']} />
         <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 20, 150]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
