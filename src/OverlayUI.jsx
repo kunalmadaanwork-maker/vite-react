@@ -402,18 +402,30 @@ export default function OverlayUI({ theme, setTheme }) {
           </div>
         </section>
 
-        {/* SECTION 4: CONTACT */}
-        <section id="contact" className="reveal flex flex-col items-center text-center gap-10">
-          <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} tracking-tight`}>Let's build something<br />that actually scales.</h2>
-          <p className={`${textSecondary} text-lg max-w-xl`}>Open to Senior BSA, AI Product Owner, and GenAI Consultant roles. Based in Bengaluru — open to remote.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl mt-2">
-            <a href="https://www.linkedin.com/in/kunal-madaan-bsa/" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl dynamic-card hover:bg-violet-500/5 transition-all ${textPrimary} font-bold text-lg`}>LinkedIn</a>
-            <button onClick={copyEmail} className={`p-6 rounded-2xl border transition-all font-bold text-lg ${copied ? 'bg-violet-500/20 border-violet-500 text-violet-500' : `dynamic-card border-transparent ${textPrimary}`}`}>
-              {copied ? "Copied Email!" : "Copy Email"}
-            </button>
-            <a href="/kunal-madaan.pdf" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl ${isDark ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:bg-zinc-200' : 'bg-slate-900 text-white shadow-[0_0_30px_rgba(0,0,0,0.1)] hover:bg-slate-800'} transition-all font-bold text-lg`}>Full Resume</a>
-          </div>
-        </section>
+       // ... keep existing imports and styles ...
+
+{/* SECTION 4: CONTACT - FIXED GLASS BOX */}
+<section id="contact" className="reveal flex flex-col items-center justify-center">
+  <div className={`dynamic-card p-8 md:p-16 rounded-[3rem] flex flex-col items-center text-center gap-10 w-full max-w-5xl mx-auto shadow-2xl`}>
+    <h2 className={`text-5xl md:text-7xl font-black ${textPrimary} tracking-tight`}>
+      Let's build something<br />that actually scales.
+    </h2>
+    <p className={`${textSecondary} text-lg max-w-xl`}>
+      Open to Senior BSA, AI Product Owner, and GenAI Consultant roles. Based in Bengaluru — open to remote.
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl mt-2">
+      <a href="https://www.linkedin.com/in/kunal-madaan-bsa/" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl dynamic-card hover:bg-violet-500/5 transition-all ${textPrimary} font-bold text-lg`}>
+        LinkedIn
+      </a>
+      <button onClick={copyEmail} className={`p-6 rounded-2xl border transition-all font-bold text-lg ${copied ? 'bg-violet-500/20 border-violet-500 text-violet-500' : `dynamic-card border-transparent ${textPrimary}`}`}>
+        {copied ? "Copied Email!" : "Copy Email"}
+      </button>
+      <a href="/kunal-madaan.pdf" target="_blank" rel="noreferrer" className={`p-6 rounded-2xl ${isDark ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:bg-zinc-200' : 'bg-slate-900 text-white shadow-[0_0_30px_rgba(0,0,0,0.1)] hover:bg-slate-800'} transition-all font-bold text-lg`}>
+        Full Resume
+      </a>
+    </div>
+  </div>
+</section>
 
       </main>
     </div>
