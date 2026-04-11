@@ -1,17 +1,15 @@
-/* 1. TAILWIND DIRECTIVES (Must be at the very top) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 2. THE OVERFLOW LOCK (Fixes the right-side gap) */
 html, body {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  /* Smooth scrolling for the anchor links */
-  scroll-behavior: smooth; 
+  scroll-behavior: smooth;
+  background-color: #030303; /* Match App logic */
 }
 
 #root {
@@ -19,28 +17,15 @@ html, body {
   overflow-x: hidden;
 }
 
-/* 3. FONT RENDERING (Kept from your Vite defaults for crisp text) */
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  font-weight: 400;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-/* 4. CUSTOM UTILITIES */
-/* Hide scrollbar for cleaner UI but keep functionality */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
 ::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.3); 
+  background: rgba(124, 58, 237, 0.4);
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(124, 58, 237, 0.6); 
+  background: rgba(124, 58, 237, 0.7);
 }
