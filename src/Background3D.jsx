@@ -23,33 +23,73 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── COSMIC STREAM: Continuous particles from start to finish ───
-const CosmicStream = ({ isDark, quality }) => {
-  const count = quality === 'high' ? 10000 : 5000;
+// ─── WARP VORTEX: Continuous spiraling particles that fix the "nothingness" ───
+const WarpVortex = ({ isDark, quality }) => {
+  const count = quality === 'high' ? 15000 : 7000;
+  const points = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    
+    for (let i = 0; i < count; i++) {
+      // Spread particles along the entire journey
+      const z = Math.random() * -200 + 20;
+      const angle = Math.random() * Math.PI * 2;
+      // Radius increases as we go deeper to create a "funnel" effect
+      const radius = Math.random() * (Math.abs(z) * 0.5 + 10);
+      
+      pos[i * 3] = Math.cos(angle) * radius;
+      pos[i * 3 + 1] = Math.sin(angle) * radius;
+      pos[i * 3 + 2] = z;
+
+      const color = new THREE.Color();
+      color.set(isDark ? (Math.random() > 0.8 ? '#C084FC' : '#ffffff') : '#94A3B8');
+      col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
+    }
+    return { pos, col };
+  }, [quality, isDark]);
+
+  const pointsRef = useRef();
+  useFrame((state) => {
+    if (pointsRef.current) {
+      pointsRef.current.rotation.z += 0.001; // Slow vortex spin
+    }
+  });
+
+  return (
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={count} array={points.pos} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={count} array={points.col} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial size={0.06} vertexColors transparent opacity={0.4} sizeAttenuation depthWrite={false} />
+    </points>
+  );
+};
+
+// ─── STARDUST BELT: Large rings the user flies through at intervals ───
+const StardustBelt = ({ position, color, isDark }) => {
+  const count = 2000;
   const points = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      // Spread particles along the entire Z journey (-150 to 15)
-      pos[i * 3] = (Math.random() - 0.5) * 100;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 100;
-      pos[i * 3 + 2] = Math.random() * -160 + 15;
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 15 + Math.random() * 10;
+      pos[i * 3] = Math.cos(angle) * radius;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 5;
+      pos[i * 3 + 2] = Math.sin(angle) * radius;
     }
     return pos;
   }, []);
 
   return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={points} itemSize={3} />
-      </bufferGeometry>
-      <pointsMaterial 
-        size={0.05} 
-        color={isDark ? '#ffffff' : '#94A3B8'} 
-        transparent 
-        opacity={0.3} 
-        sizeAttenuation 
-      />
-    </points>
+    <group position={position}>
+      <points>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={count} array={points} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial size={0.08} color={color} transparent opacity={0.3} sizeAttenuation depthWrite={false} />
+      </points>
+    </group>
   );
 };
 
@@ -58,13 +98,10 @@ const GalaxyCore = ({ isDark, quality }) => {
   const originalPositions = useRef(null);
   const currentPositions = useRef(null);
   const velocities = useRef(null);
-  
-  // GLOBAL MOUSE REF: This is the fix for the pointer-events-none issue
   const mouseGlobal = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleMove = (e) => {
-      // Normalize mouse to -1 to +1
       mouseGlobal.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouseGlobal.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
     };
@@ -113,7 +150,6 @@ const GalaxyCore = ({ isDark, quality }) => {
     const curr = currentPositions.current;
     const vel = velocities.current;
 
-    // FIX: Map Global Mouse to World Scale
     const mouseX = mouseGlobal.current.x * 60; 
     const mouseY = mouseGlobal.current.y * 30;
 
@@ -157,7 +193,6 @@ const GalaxyCore = ({ isDark, quality }) => {
   );
 };
 
-// ─── NEBULA CHAIN: Distorted clouds placed at every interval ───
 const NebulaCloud = ({ position, color, scale, isDark }) => {
   const ref = useRef();
   useFrame((state) => {
@@ -166,14 +201,10 @@ const NebulaCloud = ({ position, color, scale, isDark }) => {
       ref.current.rotation.z += 0.001;
     }
   });
-
   return (
     <mesh ref={ref} position={position} scale={scale}>
       <icosahedronGeometry args={[1, 4]} />
-      <MeshDistortMaterial 
-        distort={0.5} speed={2} radius={1} 
-        color={color} transparent opacity={0.08} 
-      />
+      <MeshDistortMaterial distort={0.5} speed={2} radius={1} color={color} transparent opacity={0.08} />
     </mesh>
   );
 };
@@ -181,13 +212,12 @@ const NebulaCloud = ({ position, color, scale, isDark }) => {
 const NebulaSystem = ({ isDark, quality }) => {
   return (
     <group>
-      {/* We place them in a chain from Z = -30 to -130 */}
       <NebulaCloud position={[-20, 5, -30]} scale={[20, 10, 15]} color={isDark ? '#7C3AED' : '#DDD6FE'} isDark={isDark} />
       <NebulaCloud position={[20, -5, -50]} scale={[15, 15, 10]} color={isDark ? '#D97706' : '#FDE68A'} isDark={isDark} />
       <NebulaCloud position={[-10, 10, -70]} scale={[25, 10, 20]} color={isDark ? '#0D9488' : '#CCFBF1'} isDark={isDark} />
       <NebulaCloud position={[25, 0, -90]} scale={[15, 20, 15]} color={isDark ? '#C026D3' : '#F5D0FE'} isDark={isDark} />
       <NebulaCloud position={[-20, -10, -110]} scale={[20, 12, 18]} color={isDark ? '#3B82F6' : '#BFDBFE'} isDark={isDark} />
-      <NebulaCloud position={[0, 5, -130]} scale={[30, 15, 25]} color={isDark ? '#A78BFA' : '#DDD6FE'} isDark={isDark} />
+      <NebulaCloud position={[0, 5, -130]} scale={[35, 20, 30]} color={isDark ? '#A78BFA' : '#DDD6FE'} isDark={isDark} />
     </group>
   );
 };
@@ -217,16 +247,16 @@ const SpaceObjects = ({ isDark, quality }) => {
         </points>
       </Float>
 
-      {/* FINAL DESTINATION: Becomes very bright as user reaches the end */}
+      {/* FINAL DESTINATION: Huge bright core for Contact Section */}
       <Float position={[0, 0, -140]} speed={2} floatIntensity={1}>
         <mesh>
-          <icosahedronGeometry args={[8, 4]} />
+          <icosahedronGeometry args={[10, 4]} />
           <MeshTransmissionMaterial 
             transmission={1} thickness={2} roughness={0} chromaticAberration={0.5}
-            color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.5}
+            color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.6}
           />
         </mesh>
-        <pointLight intensity={20} color="#C084FC" distance={60} />
+        <pointLight intensity={30} color="#C084FC" distance={100} />
       </Float>
     </group>
   );
@@ -244,7 +274,7 @@ const RocketCamera = () => {
       .to(cameraRef.current.rotation, { z: -0.05, ease: 'none' }, 0.5)
       .to(cameraRef.current.rotation, { z: 0, ease: 'none' }, 1);
   }, []);
-  return <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 15]} fov={75} near={0.1} far={250} />;
+  return <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 15]} fov={75} near={0.1} far={300} />;
 };
 
 const HeroGlow = ({ isDark }) => {
@@ -268,14 +298,6 @@ const HeroGlow = ({ isDark }) => {
         </bufferGeometry>
         <pointsMaterial size={0.18} color={isDark ? '#A855F7' : '#8B5CF6'} transparent opacity={0.65} sizeAttenuation depthWrite={false} />
       </points>
-      <mesh position={[-18, 6, -10]}>
-        <circleGeometry args={[20, 32]} />
-        <meshBasicMaterial color={isDark ? '#7C3AED' : '#8B5CF6'} transparent opacity={0.12} depthWrite={false} blending={THREE.AdditiveBlending} />
-      </mesh>
-      <mesh position={[20, -4, -8]}>
-        <circleGeometry args={[18, 32]} />
-        <meshBasicMaterial color={isDark ? '#C026D3' : '#A21CAF'} transparent opacity={0.10} depthWrite={false} blending={THREE.AdditiveBlending} />
-      </mesh>
     </group>
   );
 };
@@ -288,18 +310,22 @@ export default function Background3D({ theme }) {
     <Canvas dpr={quality === 'high' ? [1, 2] : [1, 1]} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <Suspense fallback={null}>
         <color attach="background" args={[isDark ? '#030303' : '#FFF8E7']} />
-        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 20, 200]} />
+        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 20, 250]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
         <pointLight position={[-20, 10, -50]} intensity={isDark ? 2 : 1} color={isDark ? '#FB923C' : '#D97706'} />
         <pointLight position={[15, -5, -85]} intensity={isDark ? 1.5 : 0.8} color={isDark ? '#2DD4BF' : '#0D9488'} />
         
-        <CosmicStream isDark={isDark} quality={quality} />
+        <WarpVortex isDark={isDark} quality={quality} />
         <RocketCamera />
         <HeroGlow isDark={isDark} />
         <GalaxyCore isDark={isDark} quality={quality} />
         <NebulaSystem isDark={isDark} quality={quality} />
         <SpaceObjects isDark={isDark} quality={quality} />
+        
+        {/* The Belts that break the void */}
+        <StardustBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} isDark={isDark} />
+        <StardustBelt position={[0, 0, -110]} color={isDark ? '#2DD4BF' : '#0D9488'} isDark={isDark} />
       </Suspense>
     </Canvas>
   );
