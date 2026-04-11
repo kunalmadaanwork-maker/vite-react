@@ -23,17 +23,19 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── THE WARP TUNNEL: The primary fix for the "Void" ───
-// This creates a continuous cylinder of stars that the camera travels through.
+// ─── THE DOUBLE-LAYER TUNNEL: Fills both the periphery and the center ───
 const WarpTunnel = ({ isDark, quality }) => {
-  const count = quality === 'high' ? 20000 : 10000;
+  const count = quality === 'high' ? 25000 : 12000;
   const points = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      const z = Math.random() * -250 + 20; // Spans the entire journey
+      const z = Math.random() * -300 + 20; 
       const angle = Math.random() * Math.PI * 2;
-      const radius = 20 + Math.random() * 40; // Large radius to encompass the view
+      
+      // MIXED RADIUS: Some particles far (20-60), some close (0-15) to kill the hollow center
+      const isInner = Math.random() > 0.7;
+      const radius = isInner ? Math.random() * 15 : 20 + Math.random() * 40;
       
       pos[i * 3] = Math.cos(angle) * radius;
       pos[i * 3 + 1] = Math.sin(angle) * radius;
@@ -47,8 +49,8 @@ const WarpTunnel = ({ isDark, quality }) => {
   }, [quality, isDark]);
 
   const ref = useRef();
-  useFrame((state) => {
-    if (ref.current) ref.current.rotation.z += 0.0005; // Subtle constant rotation
+  useFrame(() => {
+    if (ref.current) ref.current.rotation.z += 0.0005;
   });
 
   return (
@@ -57,115 +59,57 @@ const WarpTunnel = ({ isDark, quality }) => {
         <bufferAttribute attach="attributes-position" count={count} array={points.pos} itemSize={3} />
         <bufferAttribute attach="attributes-color" count={count} array={points.col} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.05} vertexColors transparent opacity={0.4} sizeAttenuation depthWrite={false} />
+      <pointsMaterial size={0.06} vertexColors transparent opacity={0.5} sizeAttenuation depthWrite={false} />
     </points>
   );
 };
 
-const GalaxyCore = ({ isDark, quality }) => {
+// ─── REUSABLE STAR CLUSTER: Used to place density at multiple points in the journey ───
+const StarCluster = ({ position, isDark, density = 1, color = '#ffffff' }) => {
   const pointsRef = useRef();
-  const originalPositions = useRef(null);
-  const currentPositions = useRef(null);
-  const velocities = useRef(null);
-  const mouseGlobal = useRef({ x: 0, y: 0 });
+  const count = 5000 * density;
 
-  useEffect(() => {
-    const handleMove = (e) => {
-      mouseGlobal.current.x = (e.clientX / window.innerWidth) * 2 - 1;
-      mouseGlobal.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
-    window.addEventListener('mousemove', handleMove);
-    return () => window.removeEventListener('mousemove', handleMove);
-  }, []);
-
-  const { count, positions, colors } = useMemo(() => {
-    const tierCounts = { low: 3000, mid: 8000, high: 15000 };
-    const numParticles = tierCounts[quality];
-    const pos = new Float32Array(numParticles * 3);
-    const col = new Float32Array(numParticles * 3);
-    const arms = 4;
-    const spin = 0.4;
-
-    for (let i = 0; i < numParticles; i++) {
-      const r = Math.pow(Math.random(), 0.6) * 80;
-      const armIndex = i % arms;
-      const branchAngle = (armIndex / arms) * Math.PI * 2;
-      const spinAngle = r * spin;
-      const angle = branchAngle + spinAngle;
-      const scatter = (Math.random() - 0.5) * Math.max(r * 0.15, 1.5);
-      const scatterY = (Math.random() - 0.5) * Math.max(r * 0.05, 0.5);
-
-      pos[i * 3]     = Math.cos(angle) * r + scatter;
-      pos[i * 3 + 1] = scatterY;
-      pos[i * 3 + 2] = Math.sin(angle) * r + scatter;
-
-      const color = new THREE.Color();
-      if (r < 15) color.set(isDark ? '#FFFDE7' : '#9E9E9E');
-      else if (r < 45) color.set(isDark ? (Math.random() > 0.5 ? '#90CAF9' : '#FFCC80') : (Math.random() > 0.5 ? '#7986CB' : '#78909C'));
-      else color.set(isDark ? '#9C27B0' : '#B0BEC5');
-
-      col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
-    }
-    originalPositions.current = pos.slice();
-    currentPositions.current = pos.slice();
-    velocities.current = new Float32Array(numParticles * 3);
-    return { count: numParticles, positions: pos, colors: col };
-  }, [quality, isDark]);
-
-  useFrame((state) => {
-    if (!pointsRef.current) return;
-    const posAttr = pointsRef.current.geometry.attributes.position;
-    const orig = originalPositions.current;
-    const curr = currentPositions.current;
-    const vel = velocities.current;
-
-    const mouseX = mouseGlobal.current.x * 60; 
-    const mouseY = mouseGlobal.current.y * 30;
-
-    const influenceRadius = quality === 'high' ? 15 : 10;
-    const springStrength = 0.03;
-    const drag = 0.9;
-    const repelStrength = 0.2;
+  const { positions, colors } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const clusterColor = new THREE.Color(color);
 
     for (let i = 0; i < count; i++) {
-      const ix = i * 3, iy = i * 3 + 1, iz = i * 3 + 2;
-      const dx = curr[ix] - mouseX;
-      const dy = curr[iy] - mouseY;
-      const dist2D = Math.sqrt(dx * dx + dy * dy);
+      const r = Math.pow(Math.random(), 0.7) * 30;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
 
-      if (dist2D < influenceRadius && dist2D > 0.1) {
-        const force = (influenceRadius - dist2D) / influenceRadius;
-        vel[ix] += (dx / dist2D) * force * repelStrength;
-        vel[iy] += (dy / dist2D) * force * repelStrength;
-      }
+      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 2] = r * Math.cos(phi);
 
-      vel[ix] *= drag; vel[iy] *= drag; vel[iz] *= drag;
-      curr[ix] += vel[ix] + (orig[ix] - curr[ix]) * springStrength;
-      curr[iy] += vel[iy] + (orig[iy] - curr[iy]) * springStrength;
-      curr[iz] += vel[iz] + (orig[iz] - curr[iz]) * springStrength;
-      posAttr.setXYZ(i, curr[ix], curr[iy], curr[iz]);
+      col[i * 3] = clusterColor.r;
+      col[i * 3 + 1] = clusterColor.g;
+      col[i * 3 + 2] = clusterColor.b;
     }
-    posAttr.needsUpdate = true;
-    pointsRef.current.rotation.y -= 0.0003;
+    return { positions: pos, colors: col };
+  }, [count, color]);
+
+  useFrame((state) => {
+    if (pointsRef.current) pointsRef.current.rotation.y += 0.001;
   });
 
   return (
-    <group position={[0, -8, -30]} rotation={[0.12, 0, 0]}>
+    <group position={position}>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
           <bufferAttribute attach="attributes-color" count={count} array={colors} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.14} vertexColors transparent opacity={0.85} sizeAttenuation depthWrite={false} />
+        <pointsMaterial size={0.1} vertexColors transparent opacity={0.6} sizeAttenuation depthWrite={false} />
       </points>
     </group>
   );
 };
 
-// ─── VOLUMETRIC NEBULA: Massive overlapping curtains of light ───
 const NebulaWall = ({ position, color, scale }) => {
   const ref = useRef();
-  useFrame((state) => {
+  useFrame(() => {
     if (ref.current) {
       ref.current.rotation.y += 0.001;
       ref.current.rotation.x += 0.001;
@@ -174,20 +118,20 @@ const NebulaWall = ({ position, color, scale }) => {
   return (
     <mesh ref={ref} position={position} scale={scale}>
       <icosahedronGeometry args={[1, 4]} />
-      <MeshDistortMaterial distort={0.7} speed={1.5} radius={1} color={color} transparent opacity={0.12} />
+      <MeshDistortMaterial distort={0.7} speed={1.5} radius={1} color={color} transparent opacity={0.25} />
     </mesh>
   );
 };
 
 const AsteroidBelt = ({ position, color }) => {
-  const count = 1500;
+  const count = 2000;
   const points = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const radius = 15 + Math.random() * 10;
+      const radius = 15 + Math.random() * 15;
       pos[i * 3] = Math.cos(angle) * radius;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 6;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 8;
       pos[i * 3 + 2] = Math.sin(angle) * radius;
     }
     return pos;
@@ -199,25 +143,27 @@ const AsteroidBelt = ({ position, color }) => {
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={count} array={points} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.08} color={color} transparent opacity={0.3} sizeAttenuation depthWrite={false} />
+        <pointsMaterial size={0.12} color={color} transparent opacity={0.4} sizeAttenuation depthWrite={false} />
       </points>
     </group>
   );
 };
 
-const SpaceObjects = ({ isDark }) => {
+const SingularityFinale = ({ isDark }) => {
   return (
-    <group>
-      <Float position={[0, 0, -140]} speed={2} floatIntensity={1}>
+    <group position={[0, 0, -140]}>
+      <Float speed={3} floatIntensity={2}>
         <mesh>
-          <icosahedronGeometry args={[10, 4]} />
+          <icosahedronGeometry args={[8, 4]} />
           <MeshTransmissionMaterial 
-            transmission={1} thickness={2} roughness={0} chromaticAberration={0.5}
-            color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.6}
+            transmission={1} thickness={2} roughness={0} chromaticAberration={0.8}
+            color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.8}
           />
         </mesh>
-        <pointLight intensity={30} color="#C084FC" distance={100} />
+        <pointLight intensity={50} color="#C084FC" distance={100} />
       </Float>
+      {/* High density particle shell around the singularity */}
+      <StarCluster position={[0, 0, 0]} color={isDark ? '#C084FC' : '#A78BFA'} density={2} />
     </group>
   );
 };
@@ -270,32 +216,35 @@ export default function Background3D({ theme }) {
     <Canvas dpr={quality === 'high' ? [1, 2] : [1, 1]} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <Suspense fallback={null}>
         <color attach="background" args={[isDark ? '#030303' : '#FFF8E7']} />
-        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 200]} />
+        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 250]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
         
-        {/* THE CONSTANT: Warp Tunnel fixes the void */}
+        {/* THE FIX: Always visible tunnel aroud the camera */}
         <WarpTunnel isDark={isDark} quality={quality} />
         
         <RocketCamera />
         <HeroGlow isDark={isDark} />
         
-        {/* ZONE 1: Hero */}
-        <GalaxyCore isDark={isDark} quality={quality} />
+        {/* BEAT 1: Hero Core (z= -30) */}
+        <StarCluster position={[0, -8, -30]} color={isDark ? '#FFFDE7' : '#9E9E9E'} density={3} />
 
-        {/* ZONE 2: AI Journey - OVERLAPPING the core */}
-        <NebulaWall position={[-10, 0, -40]} scale={[40, 40, 40]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
+        {/* BEAT 2: AI Journey Cluster (z= -60) */}
+        <NebulaWall position={[-20, 5, -50]} scale={[40, 20, 30]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
         <AsteroidBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} />
+        <StarCluster position={[10, 0, -65]} color={isDark ? '#90CAF9' : '#7986CB'} density={1} />
 
-        {/* ZONE 3: Horizon - Now a massive bridge nebula instead of a gap */}
-        <NebulaWall position={[0, 0, -80]} scale={[60, 60, 60]} color={isDark ? '#3B82F6' : '#BFDBFE'} />
+        {/* BEAT 3: Horizon Cluster (z= -90) */}
+        <NebulaWall position={[0, 0, -90]} scale={[60, 40, 40]} color={isDark ? '#3B82F6' : '#BFDBFE'} />
+        <StarCluster position={[-10, 5, -90]} color={isDark ? '#C084FC' : '#A78BFA'} density={1} />
 
-        {/* ZONE 4: Built With AI - Overlapping the bridge */}
-        <NebulaWall position={[10, 0, -100]} scale={[40, 40, 40]} color={isDark ? '#0D9488' : '#CCFBF1'} />
-        <AsteroidBelt position={[0, 0, -120]} color={isDark ? '#2DD4BF' : '#0D9488'} />
+        {/* BEAT 4: Built With AI Cluster (z= -120) */}
+        <NebulaWall position={[20, -10, -120]} scale={[40, 20, 30]} color={isDark ? '#0D9488' : '#CCFBF1'} />
+        <AsteroidBelt position={[0, 0, -130]} color={isDark ? '#2DD4BF' : '#0D9488'} />
+        <StarCluster position={[0, 0, -125]} color={isDark ? '#2DD4BF' : '#0D9488'} density={1} />
 
-        {/* ZONE 5: Finale */}
-        <SpaceObjects isDark={isDark} />
+        {/* BEAT 5: The Singularity Finale (z= -140) */}
+        <SingularityFinale isDark={isDark} />
       </Suspense>
     </Canvas>
   );
