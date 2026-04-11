@@ -1,6 +1,12 @@
-import React, { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { MeshTransmissionMaterial, Float, PerspectiveCamera } from '@react-three/drei';
+// File 1: Background3D.jsx
+import React, { useRef, useMemo, useEffect } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { 
+  PerspectiveCamera, 
+  Float, 
+  MeshTransmissionMaterial, 
+  Points 
+} from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -8,210 +14,278 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SwirlingGalaxy = ({ isDark }) => {
-  const groupRef = useRef();
-  const points = useMemo(() => {
-    const count = 4000;
-    const p = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const radius = Math.random() * 100;
-      const spinAngle = radius * 0.1; 
-      const branchAngle = ((i % 3) * 2 * Math.PI) / 3; 
+const getQualityTier = () => {
+  const memory = navigator.deviceMemory || 4;
+  const cores = navigator.hardwareConcurrency || 4;
+  const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  if (isMobile || memory <= 2 || cores <= 2) return 'low';
+  if (memory <= 4 || cores <= 4) return 'mid';
+  return 'high';
+};
+
+const GalaxyCore = ({ isDark, quality }) => {
+  const pointsRef = useRef();
+  const mouseWorld = useRef(new THREE.Vector3(0, 0, 0));
+  const isHovering = useRef(false);
+
+  const { count, colors, sizes, originalPositions } = useMemo(() => {
+    const tierCounts = { low: 3000, mid: 7000, high: 15000 };
+    const numParticles = tierCounts[quality];
+    
+    const pos = new Float32Array(numParticles * 3);
+    const col = new Float32Array(numParticles * 3);
+    const siz = new Float32Array(numParticles);
+
+    const arms = 4;
+    const spin = 0.3;
+
+    for (let i = 0; i < numParticles; i++) {
+      const r = Math.random() * 100;
+      const armIndex = i % arms;
+      const branchAngle = (armIndex / arms) * Math.PI * 2;
+      const spinAngle = r * spin;
       const angle = branchAngle + spinAngle;
-      p[i * 3] = Math.cos(angle) * radius + (Math.random() - 0.5) * 10; 
-      p[i * 3 + 1] = (Math.random() - 0.5) * (15 - radius * 0.1); 
-      p[i * 3 + 2] = Math.sin(angle) * radius + (Math.random() - 0.5) * 10; 
+      
+      // Gaussian scatter
+      const scatter = (Math.random() - 0.5) * (r * 0.2);
+      
+      pos[i * 3] = Math.cos(angle) * r + scatter;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * (10 / (r * 0.1 + 1)); 
+      pos[i * 3 + 2] = Math.sin(angle) * r + scatter;
+
+      // Color Zoning
+      let color = new THREE.Color();
+      if (r < 20) {
+        color.set(isDark ? '#FFF5C0' : '#BDBDBD'); // Core
+        siz[i] = 0.3;
+      } else if (r < 60) {
+        const mix = Math.random() > 0.5 ? '#C8E6FF' : '#FFB347';
+        color.set(isDark ? mix : '#94A3B8'); // Mid
+        siz[i] = 0.15;
+      } else {
+        color.set(isDark ? '#6B21A8' : '#CBD5E1'); // Outer
+        siz[i] = 0.05;
+      }
+      col[i * 3] = color.r;
+      col[i * 3 + 1] = color.g;
+      col[i * 3 + 2] = color.b;
     }
-    return p;
+
+    return { count: numParticles, colors: col, sizes: siz, originalPositions: pos };
+  }, [quality, isDark]);
+
+  const currentPositions = useMemo(() => new Float32Array(originalPositions), [originalPositions]);
+  const velocities = useMemo(() => new Float32Array(originalPositions.length), [originalPositions]);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      isHovering.current = true;
+      // Simple NDC to World projection for Z=0 plane
+      mouseWorld.current.set(
+        (e.clientX / window.innerWidth) * 2 - 1,
+        -(e.clientY / window.innerHeight) * 2 + 1,
+        0
+      ).unproject(pointsRef.current?.matrixWorld || new THREE.Matrix4());
+    };
+    const handleMouseLeave = () => { isHovering.current = false; };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', handleMouseLeave);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+    };
   }, []);
-
-  useFrame(() => { groupRef.current.rotation.y -= 0.0005; });
-
-  return (
-    <group ref={groupRef} position={[0, -10, -50]} rotation={[0.2, 0, 0]}>
-      <points>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" count={points.length / 3} array={points} itemSize={3} />
-        </bufferGeometry>
-        <pointsMaterial size={0.15} color={isDark ? "#ffffff" : "#334155"} transparent opacity={isDark ? 0.6 : 0.4} sizeAttenuation={true} fog={true} />
-      </points>
-    </group>
-  );
-};
-
-const NebulaGlow = ({ isDark }) => {
-  const ref = useRef();
-  useFrame(() => {
-    ref.current.rotation.y += 0.001;
-    ref.current.rotation.z += 0.0005;
-  });
-  return (
-    <mesh ref={ref} position={[0, 0, -40]}>
-      <sphereGeometry args={[35, 64, 64]} />
-      <MeshTransmissionMaterial thickness={10} roughness={0.6} transmission={1} chromaticAberration={0.5} color={isDark ? "#4c1d95" : "#b45309"} transparent opacity={isDark ? 0.15 : 0.08} />
-    </mesh>
-  );
-};
-
-// NEW: The Saturn Rings (Framing the Hero Container)
-const SaturnRings = ({ isDark }) => {
-  const ringGroup = useRef();
-  
-  useFrame(() => {
-    ringGroup.current.rotation.z -= 0.001;
-    ringGroup.current.rotation.y += 0.0005;
-  });
-
-  // Tilted backwards and framing the center
-  return (
-    <group ref={ringGroup} position={[0, 0, -15]} rotation={[1.4, 0, 0.2]}>
-      {/* Outer Thin Ring */}
-      <mesh>
-        <torusGeometry args={[14, 0.02, 16, 100]} />
-        <meshBasicMaterial color={isDark ? "#8b5cf6" : "#475569"} transparent opacity={0.6} />
-      </mesh>
-      {/* Middle Thick Glowing Ring */}
-      <mesh>
-        <torusGeometry args={[13.5, 0.15, 16, 100]} />
-        <meshBasicMaterial color={isDark ? "#c026d3" : "#64748b"} transparent opacity={0.3} />
-      </mesh>
-      {/* Inner Thin Ring */}
-      <mesh>
-        <torusGeometry args={[12.8, 0.03, 16, 100]} />
-        <meshBasicMaterial color={isDark ? "#2dd4bf" : "#94a3b8"} transparent opacity={0.8} />
-      </mesh>
-    </group>
-  );
-};
-
-// FIXED: Infinite looping, denser asteroid field forming a tunnel
-const AsteroidBelt = ({ isDark }) => {
-  const meshRef = useRef();
-  const count = 300; 
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  
-  const particles = useMemo(() => {
-    const temp = [];
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 12 + Math.random() * 25; 
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      
-      const z = -Math.random() * 150; 
-      
-      const scale = Math.random() * 0.8 + 0.2; 
-      const rx = Math.random() * 0.02;
-      const ry = Math.random() * 0.02;
-      const rz = Math.random() * 0.02;
-      temp.push({ x, y, z, scale, rx, ry, rz });
-    }
-    return temp;
-  }, [count]);
 
   useFrame((state) => {
-    const time = state.clock.getElapsedTime();
-    const cameraZ = state.camera.position.z;
+    if (!pointsRef.current) return;
+    const posAttr = pointsRef.current.geometry.attributes.position;
+    const influenceRadius = quality === 'high' ? 12 : 8;
+    const springStrength = isHovering.current ? 0.03 : 0.06;
 
-    particles.forEach((particle, i) => {
-      let zOffset = (particle.z - cameraZ) % 150;
+    for (let i = 0; i < count; i++) {
+      const ix = i * 3, iy = i * 3 + 1, iz = i * 3 + 2;
       
-      if (zOffset > 10) zOffset -= 150;
-      if (zOffset < -140) zOffset += 150;
+      const dx = currentPositions[ix] - mouseWorld.current.x;
+      const dy = currentPositions[iy] - mouseWorld.current.y;
+      const dz = currentPositions[iz] - mouseWorld.current.z;
+      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-      const finalZ = cameraZ + zOffset;
+      if (dist < influenceRadius) {
+        const force = (influenceRadius - dist) / influenceRadius;
+        velocities[ix] += (dx / dist) * force * 0.15;
+        velocities[iy] += (dy / dist) * force * 0.15;
+        velocities[iz] += (dz / dist) * force * 0.15;
+      }
 
-      dummy.position.set(particle.x, particle.y + Math.sin(time + i) * 0.5, finalZ);
-      dummy.rotation.set(time * particle.rx * 50, time * particle.ry * 50, time * particle.rz * 50);
-      dummy.scale.set(particle.scale, particle.scale, particle.scale);
-      dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
-    });
-    meshRef.current.instanceMatrix.needsUpdate = true;
+      velocities[ix] *= 0.92;
+      velocities[iy] *= 0.92;
+      velocities[iz] *= 0.92;
+
+      currentPositions[ix] += velocities[ix] + (originalPositions[ix] - currentPositions[ix]) * springStrength;
+      currentPositions[iy] += velocities[iy] + (originalPositions[iy] - currentPositions[iy]) * springStrength;
+      currentPositions[iz] += velocities[iz] + (originalPositions[iz] - currentPositions[iz]) * springStrength;
+
+      posAttr.setXYZ(i, currentPositions[ix], currentPositions[iy], currentPositions[iz]);
+    }
+    posAttr.needsUpdate = true;
+    pointsRef.current.rotation.y -= 0.0003;
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[null, null, count]}>
-      <dodecahedronGeometry args={[0.5, 0]} />
-      <meshStandardMaterial 
-        color={isDark ? "#a78bfa" : "#94a3b8"} 
-        emissive={isDark ? "#4c1d95" : "#475569"}
-        emissiveIntensity={0.6}
-        roughness={0.5} 
-        transparent 
-        opacity={0.9} 
-      />
-    </instancedMesh>
-  );
-};
-
-const JourneyObjects = ({ isDark }) => {
-  const coreColor = isDark ? "#c026d3" : "#0f172a"; 
-  const vaultColor = isDark ? "#2dd4bf" : "#475569"; 
-
-  return (
-    <group>
-      <SaturnRings isDark={isDark} />
-      <AsteroidBelt isDark={isDark} />
-
-      <Float position={[4, -1, -30]} speed={3}>
-        <points>
-          <sphereGeometry args={[1.5, 48, 48]} />
-          <pointsMaterial color={coreColor} size={0.06} transparent opacity={0.8} />
-        </points>
-      </Float>
-
-      <group position={[-4, 1, -60]}>
-        <points>
-          <icosahedronGeometry args={[2.5, 5]} />
-          <pointsMaterial color={vaultColor} size={0.05} transparent opacity={0.9} />
-        </points>
-        <points rotation={[Math.PI/2, 0, 0]}>
-          <torusGeometry args={[3.2, 0.5, 32, 100]} />
-          <pointsMaterial color={vaultColor} size={0.02} transparent opacity={0.5} />
-        </points>
-      </group>
-
-      <group position={[0, 0, -90]}>
-        {Array.from({ length: 12 }).map((_, i) => (
-          <points key={i} position={[(i % 3) * 1.5 - 1.5, Math.floor(i / 3) * 1.5 - 2, 0]}>
-            <boxGeometry args={[1, 0.1, 1.2, 5, 2, 5]} />
-            <pointsMaterial color={coreColor} size={0.04} transparent opacity={0.7} />
-          </points>
-        ))}
-      </group>
+    <group position={[0, -15, -60]} rotation={[0.15, 0, 0]}>
+      <Points ref={pointsRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={count} array={originalPositions} itemSize={3} />
+          <bufferAttribute attach="attributes-color" count={count} array={colors} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial 
+          size={0.1} 
+          vertexColors 
+          transparent 
+          opacity={0.8} 
+          sizeAttenuation={true} 
+        />
+      </Points>
     </group>
   );
 };
 
-const SceneController = ({ isDark }) => {
-  const cameraRef = useRef();
-  useGSAP(() => {
-    gsap.to(cameraRef.current.position, {
-      z: -110,
-      ease: 'power1.inOut', 
-      scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 1.5 }
-    });
-  }, []);
+const NebulaClouds = ({ isDark, quality }) => {
+  const ref1 = useRef();
+  const ref2 = useRef();
+  const ref3 = useRef();
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    ref1.current.rotation.y = t * 0.05;
+    ref2.current.rotation.x = -t * 0.03;
+    ref3.current.rotation.z = t * 0.02;
+  });
 
   return (
     <>
-      <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 10]} />
-      <SwirlingGalaxy isDark={isDark} />
-      <NebulaGlow isDark={isDark} />
-      <JourneyObjects isDark={isDark} />
+      <mesh ref={ref1} position={[-20, 5, -45]}>
+        <sphereGeometry args={[18, 32, 32]} />
+        <MeshTransmissionMaterial 
+          transmission={1} thickness={8} roughness={0.8} chromaticAberration={0.3} 
+          color={isDark ? '#7C3AED' : '#DDD6FE'} transparent opacity={0.12} 
+        />
+      </mesh>
+      {(quality !== 'low') && (
+        <mesh ref={ref2} position={[25, -8, -75]}>
+          <sphereGeometry args={[22, 32, 32]} />
+          <MeshTransmissionMaterial 
+            transmission={1} thickness={8} roughness={0.8} chromaticAberration={0.3} 
+            color={isDark ? '#D97706' : '#FDE68A'} transparent opacity={0.08} 
+          />
+        </mesh>
+      )}
+      {(quality === 'high' || quality === 'mid') && (
+        <mesh ref={ref3} position={[0, 10, -100]}>
+          <sphereGeometry args={[25, 32, 32]} />
+          <MeshTransmissionMaterial 
+            transmission={1} thickness={8} roughness={0.8} chromaticAberration={0.3} 
+            color={isDark ? '#0D9488' : '#CCFBF1'} transparent opacity={0.06} 
+          />
+        </mesh>
+      )}
     </>
   );
 };
 
+const SpaceObjects = ({ isDark, quality }) => {
+  const gradientTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(canvas);
+  }, []);
+
+  return (
+    <group>
+      <Float position={[8, 2, -35]} speed={1} floatIntensity={0.5}>
+        <Points>
+          <sphereGeometry args={[1, 16, 16]} />
+          <pointsMaterial size={0.08} color="#FFC857" transparent opacity={0.8} />
+        </Points>
+      </Float>
+
+      <mesh position={[-15, 0, -65]} rotation={[Math.PI/2, 0, 0]}>
+        <torusGeometry args={[12, 3, 2, 80]} />
+        <pointsMaterial size={0.05} color="#818CF8" transparent opacity={0.4} />
+      </mesh>
+
+      {quality === 'high' && (
+        <>
+          <mesh position={[30, 15, -110]}>
+            <planeGeometry args={[8, 8]} />
+            <meshBasicMaterial map={gradientTexture} transparent opacity={0.6} blending={THREE.AdditiveBlending} />
+          </mesh>
+          {Array.from({ length: 200 }).map((_, i) => (
+            <Points key={i} position={[(Math.random()-0.5)*100, (Math.random()-0.5)*100, -40 - Math.random()*80]}>
+              <bufferGeometry>
+                <float32Attribute attach="attributes-position" args={[new Float32Array([0,0,0])]} />
+              </bufferGeometry>
+              <pointsMaterial size={0.04} color="white" transparent opacity={0.3} />
+            </Points>
+          ))}
+        </>
+      )}
+    </group>
+  );
+};
+
+const RocketCamera = () => {
+  const cameraRef = useRef();
+
+  useGSAP(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: 'body',
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 2
+      }
+    });
+
+    tl.to(cameraRef.current.position, { z: -40, x: 3, y: -2, ease: 'none' }, 0)
+      .to(cameraRef.current.position, { z: -75, x: -5, y: 4, ease: 'none' }, 0.3)
+      .to(cameraRef.current.position, { z: -100, x: 2, y: -1, ease: 'none' }, 0.6)
+      .to(cameraRef.current.position, { z: -125, x: 0, y: 0, ease: 'none' }, 0.85);
+
+    tl.to(cameraRef.current.rotation, { z: 0.05, ease: 'none' }, 0)
+      .to(cameraRef.current.rotation, { z: -0.08, ease: 'none' }, 0.3)
+      .to(cameraRef.current.rotation, { z: 0.03, ease: 'none' }, 0.6)
+      .to(cameraRef.current.rotation, { z: 0, ease: 'none' }, 0.85);
+  }, []);
+
+  return <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 15]} fov={75} near={0.1} far={200} />;
+};
+
 export default function Background3D({ theme }) {
   const isDark = theme === 'dark';
+  const quality = getQualityTier();
+
   return (
-    <Canvas dpr={[1, 2]}>
-      <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 90]} />
-      <ambientLight intensity={isDark ? 0.4 : 1} />
-      <pointLight position={[10, 10, 10]} intensity={isDark ? 2 : 1.5} color={isDark ? "#c026d3" : "#0f172a"} />
-      <SceneController isDark={isDark} />
+    <Canvas 
+      dpr={quality === 'high' ? [1, 2] : quality === 'mid' ? [1, 1.5] : [1, 1]}
+      gl={{ antialias: quality !== 'low', powerPreference: 'high-performance' }}
+    >
+      <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 5, 130]} />
+      <ambientLight intensity={isDark ? 0.2 : 0.8} />
+      <pointLight position={[0, 0, -20]} intensity={isDark ? 3 : 1.5} color={isDark ? "#C084FC" : "#7C3AED"} />
+      <pointLight position={[-20, 10, -60]} intensity={isDark ? 2 : 1} color={isDark ? "#FB923C" : "#D97706"} />
+      <pointLight position={[15, -5, -90]} intensity={isDark ? 1.5 : 0.8} color={isDark ? "#2DD4BF" : "#0D9488"} />
+      
+      <RocketCamera />
+      <GalaxyCore isDark={isDark} quality={quality} />
+      <NebulaClouds isDark={isDark} quality={quality} />
+      <SpaceObjects isDark={isDark} quality={quality} />
     </Canvas>
   );
 }
