@@ -1,6 +1,4 @@
-// File 2: LoadingScreen.jsx
 import React, { useState, useEffect } from 'react';
-import gsap from 'gsap';
 
 const bootLines = [
   { text: "Initializing galaxy core...", check: "✓" },
@@ -18,7 +16,7 @@ export default function LoadingScreen({ onComplete }) {
 
   useEffect(() => {
     if (index < bootLines.length) {
-      const timer = setTimeout(() => setIndex(prev => prev + 1), 320);
+      const timer = setTimeout(() => setIndex(prev => prev + 1), 300);
       return () => clearTimeout(timer);
     } else {
       setTimeout(() => setIsLaunching(true), 500);
@@ -29,7 +27,7 @@ export default function LoadingScreen({ onComplete }) {
     if (isLaunching) {
       const timer = setTimeout(() => {
         onComplete();
-      }, 1200);
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [isLaunching, onComplete]);
@@ -54,9 +52,6 @@ export default function LoadingScreen({ onComplete }) {
               <span className="text-violet-400 font-bold">{i < index ? line.check : ""}</span>
             </div>
           ))}
-          {index < bootLines.length && (
-            <div className="w-2 h-5 bg-violet-500 animate-pulse inline-block align-middle ml-1" />
-          )}
         </div>
 
         <div className="space-y-2">
@@ -67,10 +62,7 @@ export default function LoadingScreen({ onComplete }) {
           <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
             <div 
               className="h-full transition-all duration-300 ease-out" 
-              style={{ 
-                width: `${progress}%`, 
-                background: 'linear-gradient(90deg, #7C3AED, #C026D3, #2DD4BF)' 
-              }} 
+              style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #7C3AED, #C026D3, #2DD4BF)' }} 
             />
           </div>
         </div>
@@ -79,8 +71,7 @@ export default function LoadingScreen({ onComplete }) {
           <div className="p-4 border border-violet-500/20 bg-violet-500/5 rounded-lg text-left">
             <div className="text-violet-400 text-xs font-bold mb-1">💡 Better on Desktop</div>
             <p className="text-zinc-400 text-[11px] leading-relaxed">
-              This site features a live 3D galaxy with 15,000 particles, 
-              interactive gravity disruption, and a scroll-driven rocket journey. 
+              This site features a live 3D galaxy with interactive gravity disruption. 
               For the full cinematic experience, visit on a desktop.
             </p>
           </div>
