@@ -23,8 +23,24 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── THE DOUBLE-LAYER TUNNEL: Fills both the periphery and the center ───
+// ─── TEXTURE GENERATOR: Turns square pixels into soft glowing orbs ───
+const createCircleTexture = () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+  gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(canvas);
+};
+
 const WarpTunnel = ({ isDark, quality }) => {
+  const orbTexture = useMemo(() => createCircleTexture(), []);
   const count = quality === 'high' ? 25000 : 12000;
   const points = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -32,15 +48,11 @@ const WarpTunnel = ({ isDark, quality }) => {
     for (let i = 0; i < count; i++) {
       const z = Math.random() * -300 + 20; 
       const angle = Math.random() * Math.PI * 2;
-      
-      // MIXED RADIUS: Some particles far (20-60), some close (0-15) to kill the hollow center
       const isInner = Math.random() > 0.7;
       const radius = isInner ? Math.random() * 15 : 20 + Math.random() * 40;
-      
       pos[i * 3] = Math.cos(angle) * radius;
       pos[i * 3 + 1] = Math.sin(angle) * radius;
       pos[i * 3 + 2] = z;
-
       const color = new THREE.Color();
       color.set(isDark ? (Math.random() > 0.9 ? '#C084FC' : '#ffffff') : '#94A3B8');
       col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
@@ -49,9 +61,7 @@ const WarpTunnel = ({ isDark, quality }) => {
   }, [quality, isDark]);
 
   const ref = useRef();
-  useFrame(() => {
-    if (ref.current) ref.current.rotation.z += 0.0005;
-  });
+  useFrame(() => { if (ref.current) ref.current.rotation.z += 0.0005; });
 
   return (
     <points ref={ref}>
@@ -59,49 +69,100 @@ const WarpTunnel = ({ isDark, quality }) => {
         <bufferAttribute attach="attributes-position" count={count} array={points.pos} itemSize={3} />
         <bufferAttribute attach="attributes-color" count={count} array={points.col} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.06} vertexColors transparent opacity={0.5} sizeAttenuation depthWrite={false} />
+      <pointsMaterial size={0.04} map={orbTexture} vertexColors transparent opacity={0.4} sizeAttenuation depthWrite={false} />
     </points>
   );
 };
 
-// ─── REUSABLE STAR CLUSTER: Used to place density at multiple points in the journey ───
-const StarCluster = ({ position, isDark, density = 1, color = '#ffffff' }) => {
+const GalaxyCore = ({ isDark, quality }) => {
   const pointsRef = useRef();
-  const count = 5000 * density;
+  const orbTexture = useMemo(() => createCircleTexture(), []);
+  const originalPositions = useRef(null);
+  const currentPositions = useRef(null);
+  const velocities = useRef(null);
+  const mouseGlobal = useRef({ x: 0, y: 0 });
 
-  const { positions, colors } = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const col = new Float32Array(count * 3);
-    const clusterColor = new THREE.Color(color);
+  useEffect(() => {
+    const handleMove = (e) => {
+      mouseGlobal.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseGlobal.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener('mousemove', handleMove);
+    return () => window.removeEventListener('mousemove', handleMove);
+  }, []);
 
-    for (let i = 0; i < count; i++) {
-      const r = Math.pow(Math.random(), 0.7) * 30;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
+  const { count, positions, colors } = useMemo(() => {
+    const tierCounts = { low: 3000, mid: 8000, high: 15000 };
+    const numParticles = tierCounts[quality];
+    const pos = new Float32Array(numParticles * 3);
+    const col = new Float32Array(numParticles * 3);
+    const arms = 4;
+    const spin = 0.4;
 
-      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i * 3 + 2] = r * Math.cos(phi);
-
-      col[i * 3] = clusterColor.r;
-      col[i * 3 + 1] = clusterColor.g;
-      col[i * 3 + 2] = clusterColor.b;
+    for (let i = 0; i < numParticles; i++) {
+      const r = Math.pow(Math.random(), 0.6) * 80;
+      const armIndex = i % arms;
+      const branchAngle = (armIndex / arms) * Math.PI * 2;
+      const spinAngle = r * spin;
+      const angle = branchAngle + spinAngle;
+      const scatter = (Math.random() - 0.5) * Math.max(r * 0.15, 1.5);
+      const scatterY = (Math.random() - 0.5) * Math.max(r * 0.05, 0.5);
+      pos[i * 3] = Math.cos(angle) * r + scatter;
+      pos[i * 3 + 1] = scatterY;
+      pos[i * 3 + 2] = Math.sin(angle) * r + scatter;
+      const color = new THREE.Color();
+      if (r < 15) color.set(isDark ? '#FFFDE7' : '#9E9E9E');
+      else if (r < 45) color.set(isDark ? (Math.random() > 0.5 ? '#90CAF9' : '#FFCC80') : (Math.random() > 0.5 ? '#7986CB' : '#78909C'));
+      else color.set(isDark ? '#9C27B0' : '#B0BEC5');
+      col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
     }
-    return { positions: pos, colors: col };
-  }, [count, color]);
+    originalPositions.current = pos.slice();
+    currentPositions.current = pos.slice();
+    velocities.current = new Float32Array(numParticles * 3);
+    return { count: numParticles, positions: pos, colors: col };
+  }, [quality, isDark]);
 
   useFrame((state) => {
-    if (pointsRef.current) pointsRef.current.rotation.y += 0.001;
+    if (!pointsRef.current) return;
+    const posAttr = pointsRef.current.geometry.attributes.position;
+    const orig = originalPositions.current;
+    const curr = currentPositions.current;
+    const vel = velocities.current;
+    const mouseX = mouseGlobal.current.x * 60; 
+    const mouseY = mouseGlobal.current.y * 30;
+    const influenceRadius = quality === 'high' ? 15 : 10;
+    const springStrength = 0.03;
+    const drag = 0.9;
+    const repelStrength = 0.2;
+
+    for (let i = 0; i < count; i++) {
+      const ix = i * 3, iy = i * 3 + 1, iz = i * 3 + 2;
+      const dx = curr[ix] - mouseX;
+      const dy = curr[iy] - mouseY;
+      const dist2D = Math.sqrt(dx * dx + dy * dy);
+      if (dist2D < influenceRadius && dist2D > 0.1) {
+        const force = (influenceRadius - dist2D) / influenceRadius;
+        vel[ix] += (dx / dist2D) * force * repelStrength;
+        vel[iy] += (dy / dist2D) * force * repelStrength;
+      }
+      vel[ix] *= drag; vel[iy] *= drag; vel[iz] *= drag;
+      curr[ix] += vel[ix] + (orig[ix] - curr[ix]) * springStrength;
+      curr[iy] += vel[iy] + (orig[iy] - curr[iy]) * springStrength;
+      curr[iz] += vel[iz] + (orig[iz] - curr[iz]) * springStrength;
+      posAttr.setXYZ(i, curr[ix], curr[iy], curr[iz]);
+    }
+    posAttr.needsUpdate = true;
+    pointsRef.current.rotation.y -= 0.0003;
   });
 
   return (
-    <group position={position}>
+    <group position={[0, -8, -30]} rotation={[0.12, 0, 0]}>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
           <bufferAttribute attach="attributes-color" count={count} array={colors} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.1} vertexColors transparent opacity={0.6} sizeAttenuation depthWrite={false} />
+        <pointsMaterial size={0.1} map={orbTexture} vertexColors transparent opacity={0.85} sizeAttenuation depthWrite={false} />
       </points>
     </group>
   );
@@ -124,6 +185,7 @@ const NebulaWall = ({ position, color, scale }) => {
 };
 
 const AsteroidBelt = ({ position, color }) => {
+  const orbTexture = useMemo(() => createCircleTexture(), []);
   const count = 2000;
   const points = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -143,27 +205,22 @@ const AsteroidBelt = ({ position, color }) => {
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={count} array={points} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.12} color={color} transparent opacity={0.4} sizeAttenuation depthWrite={false} />
+        <pointsMaterial size={0.08} map={orbTexture} color={color} transparent opacity={0.3} sizeAttenuation depthWrite={false} />
       </points>
     </group>
   );
 };
 
-const SingularityFinale = ({ isDark }) => {
+const SpaceObjects = ({ isDark }) => {
   return (
-    <group position={[0, 0, -140]}>
-      <Float speed={3} floatIntensity={2}>
+    <group>
+      <Float position={[0, 0, -140]} speed={2} floatIntensity={1}>
         <mesh>
-          <icosahedronGeometry args={[8, 4]} />
-          <MeshTransmissionMaterial 
-            transmission={1} thickness={2} roughness={0} chromaticAberration={0.8}
-            color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.8}
-          />
+          <icosahedronGeometry args={[10, 4]} />
+          <MeshTransmissionMaterial transmission={1} thickness={2} roughness={0} chromaticAberration={0.5} color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.6} />
         </mesh>
-        <pointLight intensity={50} color="#C084FC" distance={100} />
+        <pointLight intensity={30} color="#C084FC" distance={100} />
       </Float>
-      {/* High density particle shell around the singularity */}
-      <StarCluster position={[0, 0, 0]} color={isDark ? '#C084FC' : '#A78BFA'} density={2} />
     </group>
   );
 };
@@ -172,9 +229,7 @@ const RocketCamera = () => {
   const cameraRef = useRef();
   useGSAP(() => {
     if (!cameraRef.current) return;
-    const tl = gsap.timeline({
-      scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
-    });
+    const tl = gsap.timeline({ scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 } });
     tl.to(cameraRef.current.position, { z: -145, x: 0, y: 0, ease: 'none' }, 0)
       .to(cameraRef.current.rotation, { z: 0.05, ease: 'none' }, 0)
       .to(cameraRef.current.rotation, { z: -0.05, ease: 'none' }, 0.5)
@@ -184,6 +239,7 @@ const RocketCamera = () => {
 };
 
 const HeroGlow = ({ isDark }) => {
+  const orbTexture = useMemo(() => createCircleTexture(), []);
   const haloPositions = useMemo(() => {
     const count = 1200; const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
@@ -202,7 +258,7 @@ const HeroGlow = ({ isDark }) => {
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={1200} array={haloPositions} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.18} color={isDark ? '#A855F7' : '#8B5CF6'} transparent opacity={0.65} sizeAttenuation depthWrite={false} />
+        <pointsMaterial size={0.12} map={orbTexture} color={isDark ? '#A855F7' : '#8B5CF6'} transparent opacity={0.65} sizeAttenuation depthWrite={false} />
       </points>
     </group>
   );
@@ -216,35 +272,19 @@ export default function Background3D({ theme }) {
     <Canvas dpr={quality === 'high' ? [1, 2] : [1, 1]} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <Suspense fallback={null}>
         <color attach="background" args={[isDark ? '#030303' : '#FFF8E7']} />
-        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 250]} />
+        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 200]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
-        
-        {/* THE FIX: Always visible tunnel aroud the camera */}
         <WarpTunnel isDark={isDark} quality={quality} />
-        
         <RocketCamera />
         <HeroGlow isDark={isDark} />
-        
-        {/* BEAT 1: Hero Core (z= -30) */}
-        <StarCluster position={[0, -8, -30]} color={isDark ? '#FFFDE7' : '#9E9E9E'} density={3} />
-
-        {/* BEAT 2: AI Journey Cluster (z= -60) */}
-        <NebulaWall position={[-20, 5, -50]} scale={[40, 20, 30]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
+        <GalaxyCore isDark={isDark} quality={quality} />
+        <NebulaWall position={[-10, 0, -40]} scale={[40, 40, 40]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
         <AsteroidBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} />
-        <StarCluster position={[10, 0, -65]} color={isDark ? '#90CAF9' : '#7986CB'} density={1} />
-
-        {/* BEAT 3: Horizon Cluster (z= -90) */}
-        <NebulaWall position={[0, 0, -90]} scale={[60, 40, 40]} color={isDark ? '#3B82F6' : '#BFDBFE'} />
-        <StarCluster position={[-10, 5, -90]} color={isDark ? '#C084FC' : '#A78BFA'} density={1} />
-
-        {/* BEAT 4: Built With AI Cluster (z= -120) */}
-        <NebulaWall position={[20, -10, -120]} scale={[40, 20, 30]} color={isDark ? '#0D9488' : '#CCFBF1'} />
-        <AsteroidBelt position={[0, 0, -130]} color={isDark ? '#2DD4BF' : '#0D9488'} />
-        <StarCluster position={[0, 0, -125]} color={isDark ? '#2DD4BF' : '#0D9488'} density={1} />
-
-        {/* BEAT 5: The Singularity Finale (z= -140) */}
-        <SingularityFinale isDark={isDark} />
+        <NebulaWall position={[0, 0, -80]} scale={[60, 40, 60]} color={isDark ? '#3B82F6' : '#BFDBFE'} />
+        <NebulaWall position={[10, 0, -100]} scale={[40, 40, 40]} color={isDark ? '#0D9488' : '#CCFBF1'} />
+        <AsteroidBelt position={[0, 0, -120]} color={isDark ? '#2DD4BF' : '#0D9488'} />
+        <SpaceObjects isDark={isDark} />
       </Suspense>
     </Canvas>
   );
