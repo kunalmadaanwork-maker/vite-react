@@ -14,7 +14,6 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ─── Quality Detection ────────────────────────────────────────────────────────
 const getQualityTier = () => {
   const memory = navigator.deviceMemory || 4;
   const cores = navigator.hardwareConcurrency || 4;
@@ -24,47 +23,38 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── TEXTURE GENERATOR: Turns square pixels into soft glowing orbs ───
 const createCircleTexture = () => {
   const canvas = document.createElement('canvas');
   canvas.width = 64;
   canvas.height = 64;
   const ctx = canvas.getContext('2d');
   const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  
-  // Hot Core: center is pure white for high "stellar temperature"
   gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
   gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)');
-  // Soft Falloff: gradual fade to prevent harsh edges
   gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.3)');
   gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 64, 64);
   return new THREE.CanvasTexture(canvas);
 };
 
-// ─── WARP TUNNEL: The "Anti-Void" cylinder with Inner and Outer layers ───
 const WarpTunnel = ({ isDark, quality }) => {
   const orbTexture = useMemo(() => createCircleTexture(), []);
   const count = quality === 'high' ? 25000 : 12000;
-  
   const points = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const z = Math.random() * -300 + 20; 
       const angle = Math.random() * Math.PI * 2;
-      // Fix the hollow center: mix of close (0-15) and far (20-60) particles
       const isInner = Math.random() > 0.7;
       const radius = isInner ? Math.random() * 15 : 20 + Math.random() * 40;
-      
       pos[i * 3] = Math.cos(angle) * radius;
       pos[i * 3 + 1] = Math.sin(angle) * radius;
       pos[i * 3 + 2] = z;
-
       const color = new THREE.Color();
-      color.set(isDark ? (Math.random() > 0.9 ? '#C084FC' : '#ffffff') : '#94A3B8');
+      // LIGHT THEME: Using Deep Slate/Indigo for contrast
+      color.set(isDark ? (Math.random() > 0.9 ? '#C084FC' : '#ffffff') : (Math.random() > 0.5 ? '#1E293B' : '#4338CA'));
       col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
     }
     return { pos, col };
@@ -84,16 +74,15 @@ const WarpTunnel = ({ isDark, quality }) => {
         map={orbTexture} 
         vertexColors 
         transparent 
-        opacity={0.6} 
+        opacity={isDark ? 0.6 : 0.8} // Higher opacity for light mode
         sizeAttenuation 
         depthWrite={false} 
-        blending={THREE.AdditiveBlending} 
+        blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending} 
       />
     </points>
   );
 };
 
-// ─── GALAXY CORE: High-impact interactive center ───
 const GalaxyCore = ({ isDark, quality }) => {
   const pointsRef = useRef();
   const orbTexture = useMemo(() => createCircleTexture(), []);
@@ -131,9 +120,10 @@ const GalaxyCore = ({ isDark, quality }) => {
       pos[i * 3 + 1] = scatterY;
       pos[i * 3 + 2] = Math.sin(angle) * r + scatter;
       const color = new THREE.Color();
-      if (r < 15) color.set(isDark ? '#FFFDE7' : '#9E9E9E');
-      else if (r < 45) color.set(isDark ? (Math.random() > 0.5 ? '#90CAF9' : '#FFCC80') : (Math.random() > 0.5 ? '#7986CB' : '#78909C'));
-      else color.set(isDark ? '#9C27B0' : '#B0BEC5');
+      // LIGHT THEME: Saturated darks for anti-star effect
+      if (r < 15) color.set(isDark ? '#FFFDE7' : '#111827');
+      else if (r < 45) color.set(isDark ? (Math.random() > 0.5 ? '#90CAF9' : '#FFCC80') : (Math.random() > 0.5 ? '#312E81' : '#4C1D95'));
+      else color.set(isDark ? '#9C27B0' : '#1E1B4B');
       col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
     }
     originalPositions.current = pos.slice();
@@ -187,10 +177,10 @@ const GalaxyCore = ({ isDark, quality }) => {
           map={orbTexture} 
           vertexColors 
           transparent 
-          opacity={0.9} 
+          opacity={isDark ? 0.9 : 1.0} 
           sizeAttenuation 
           depthWrite={false} 
-          blending={THREE.AdditiveBlending} 
+          blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending} 
         />
       </points>
     </group>
@@ -239,12 +229,12 @@ const AsteroidBelt = ({ position, color }) => {
           map={orbTexture} 
           color={color} 
           transparent 
-          opacity={0.5} 
+          opacity={isDark ? 0.5 : 0.8} 
           sizeAttenuation 
           depthWrite={false} 
-          blending={THREE.AdditiveBlending} 
+          blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending} 
         />
-      </points>
+      </group>
     </group>
   );
 };
@@ -267,19 +257,8 @@ const RocketCamera = () => {
   const cameraRef = useRef();
   useGSAP(() => {
     if (!cameraRef.current) return;
-    const tl = gsap.timeline({
-      scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
-    });
-
-    // FIX: Explicit duration of 1 ensures Z movement spans 100% of the scroll
-    tl.to(cameraRef.current.position, { 
-      z: -145, 
-      x: 0, 
-      y: 0, 
-      duration: 1, 
-      ease: 'none' 
-    }, 0);
-
+    const tl = gsap.timeline({ scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 } });
+    tl.to(cameraRef.current.position, { z: -145, x: 0, y: 0, duration: 1, ease: 'none' }, 0);
     tl.to(cameraRef.current.rotation, { z: 0.05, duration: 0.3, ease: 'none' }, 0);
     tl.to(cameraRef.current.rotation, { z: -0.05, duration: 0.3, ease: 'none' }, 0.3);
     tl.to(cameraRef.current.rotation, { z: 0, duration: 0.4, ease: 'none' }, 0.6);
@@ -307,7 +286,16 @@ const HeroGlow = ({ isDark }) => {
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={1200} array={haloPositions} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.12} map={orbTexture} color={isDark ? '#A855F7' : '#8B5CF6'} transparent opacity={0.65} sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
+        <pointsMaterial 
+          size={0.12} 
+          map={orbTexture} 
+          color={isDark ? '#A855F7' : '#4C1D95'} 
+          transparent 
+          opacity={isDark ? 0.65 : 0.8} 
+          sizeAttenuation 
+          depthWrite={false} 
+          blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending} 
+        />
       </points>
     </group>
   );
@@ -324,7 +312,6 @@ export default function Background3D({ theme }) {
         <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 200]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
-        
         <WarpTunnel isDark={isDark} quality={quality} />
         <RocketCamera />
         <HeroGlow isDark={isDark} />
