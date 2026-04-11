@@ -14,6 +14,7 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ─── Quality Detection ────────────────────────────────────────────────────────
 const getQualityTier = () => {
   const memory = navigator.deviceMemory || 4;
   const cores = navigator.hardwareConcurrency || 4;
@@ -30,29 +31,38 @@ const createCircleTexture = () => {
   canvas.height = 64;
   const ctx = canvas.getContext('2d');
   const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  
+  // Hot Core: center is pure white for high "stellar temperature"
   gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
-  gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+  gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)');
+  // Soft Falloff: gradual fade to prevent harsh edges
+  gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.3)');
   gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 64, 64);
   return new THREE.CanvasTexture(canvas);
 };
 
+// ─── WARP TUNNEL: The "Anti-Void" cylinder with Inner and Outer layers ───
 const WarpTunnel = ({ isDark, quality }) => {
   const orbTexture = useMemo(() => createCircleTexture(), []);
   const count = quality === 'high' ? 25000 : 12000;
+  
   const points = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const z = Math.random() * -300 + 20; 
       const angle = Math.random() * Math.PI * 2;
+      // Fix the hollow center: mix of close (0-15) and far (20-60) particles
       const isInner = Math.random() > 0.7;
       const radius = isInner ? Math.random() * 15 : 20 + Math.random() * 40;
+      
       pos[i * 3] = Math.cos(angle) * radius;
       pos[i * 3 + 1] = Math.sin(angle) * radius;
       pos[i * 3 + 2] = z;
+
       const color = new THREE.Color();
       color.set(isDark ? (Math.random() > 0.9 ? '#C084FC' : '#ffffff') : '#94A3B8');
       col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
@@ -69,11 +79,21 @@ const WarpTunnel = ({ isDark, quality }) => {
         <bufferAttribute attach="attributes-position" count={count} array={points.pos} itemSize={3} />
         <bufferAttribute attach="attributes-color" count={count} array={points.col} itemSize={3} />
       </bufferGeometry>
-      <pointsMaterial size={0.04} map={orbTexture} vertexColors transparent opacity={0.4} sizeAttenuation depthWrite={false} />
+      <pointsMaterial 
+        size={0.06} 
+        map={orbTexture} 
+        vertexColors 
+        transparent 
+        opacity={0.6} 
+        sizeAttenuation 
+        depthWrite={false} 
+        blending={THREE.AdditiveBlending} 
+      />
     </points>
   );
 };
 
+// ─── GALAXY CORE: High-impact interactive center ───
 const GalaxyCore = ({ isDark, quality }) => {
   const pointsRef = useRef();
   const orbTexture = useMemo(() => createCircleTexture(), []);
@@ -122,7 +142,7 @@ const GalaxyCore = ({ isDark, quality }) => {
     return { count: numParticles, positions: pos, colors: col };
   }, [quality, isDark]);
 
-  useFrame((state) => {
+  useFrame(() => {
     if (!pointsRef.current) return;
     const posAttr = pointsRef.current.geometry.attributes.position;
     const orig = originalPositions.current;
@@ -162,7 +182,16 @@ const GalaxyCore = ({ isDark, quality }) => {
           <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
           <bufferAttribute attach="attributes-color" count={count} array={colors} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.1} map={orbTexture} vertexColors transparent opacity={0.85} sizeAttenuation depthWrite={false} />
+        <pointsMaterial 
+          size={0.12} 
+          map={orbTexture} 
+          vertexColors 
+          transparent 
+          opacity={0.9} 
+          sizeAttenuation 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </points>
     </group>
   );
@@ -205,7 +234,16 @@ const AsteroidBelt = ({ position, color }) => {
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={count} array={points} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.08} map={orbTexture} color={color} transparent opacity={0.3} sizeAttenuation depthWrite={false} />
+        <pointsMaterial 
+          size={0.1} 
+          map={orbTexture} 
+          color={color} 
+          transparent 
+          opacity={0.5} 
+          sizeAttenuation 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending} 
+        />
       </points>
     </group>
   );
@@ -229,11 +267,22 @@ const RocketCamera = () => {
   const cameraRef = useRef();
   useGSAP(() => {
     if (!cameraRef.current) return;
-    const tl = gsap.timeline({ scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 } });
-    tl.to(cameraRef.current.position, { z: -145, x: 0, y: 0, ease: 'none' }, 0)
-      .to(cameraRef.current.rotation, { z: 0.05, ease: 'none' }, 0)
-      .to(cameraRef.current.rotation, { z: -0.05, ease: 'none' }, 0.5)
-      .to(cameraRef.current.rotation, { z: 0, ease: 'none' }, 1);
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
+    });
+
+    // FIX: Explicit duration of 1 ensures Z movement spans 100% of the scroll
+    tl.to(cameraRef.current.position, { 
+      z: -145, 
+      x: 0, 
+      y: 0, 
+      duration: 1, 
+      ease: 'none' 
+    }, 0);
+
+    tl.to(cameraRef.current.rotation, { z: 0.05, duration: 0.3, ease: 'none' }, 0);
+    tl.to(cameraRef.current.rotation, { z: -0.05, duration: 0.3, ease: 'none' }, 0.3);
+    tl.to(cameraRef.current.rotation, { z: 0, duration: 0.4, ease: 'none' }, 0.6);
   }, []);
   return <PerspectiveCamera ref={cameraRef} makeDefault position={[0, 0, 15]} fov={75} near={0.1} far={300} />;
 };
@@ -258,7 +307,7 @@ const HeroGlow = ({ isDark }) => {
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={1200} array={haloPositions} itemSize={3} />
         </bufferGeometry>
-        <pointsMaterial size={0.12} map={orbTexture} color={isDark ? '#A855F7' : '#8B5CF6'} transparent opacity={0.65} sizeAttenuation depthWrite={false} />
+        <pointsMaterial size={0.12} map={orbTexture} color={isDark ? '#A855F7' : '#8B5CF6'} transparent opacity={0.65} sizeAttenuation depthWrite={false} blending={THREE.AdditiveBlending} />
       </points>
     </group>
   );
@@ -275,6 +324,7 @@ export default function Background3D({ theme }) {
         <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 200]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
+        
         <WarpTunnel isDark={isDark} quality={quality} />
         <RocketCamera />
         <HeroGlow isDark={isDark} />
