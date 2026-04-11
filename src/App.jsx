@@ -1,3 +1,4 @@
+App.jsx
 import React, { useState, useEffect } from 'react';
 import { ReactLenis } from '@studio-freight/react-lenis';
 import Background3D from './Background3D';
@@ -9,8 +10,8 @@ export default function App() {
   const [theme, setTheme] = useState('dark');
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // FIX: Prevent the "white screen" by forcing the body background immediately
   useEffect(() => {
-    // Immediate background color fix to prevent white flashes
     document.body.style.backgroundColor = theme === 'dark' ? '#030303' : '#FFF8E7';
     document.body.style.margin = '0';
     document.body.style.overflowX = 'hidden';
@@ -30,13 +31,11 @@ export default function App() {
             transition: 'opacity 0.8s ease-in-out' 
           }}
         >
-          {/* Background Layer: 3D Canvas */}
           <div className="fixed top-0 left-0 w-full h-full z-0 pointer-events-none">
             <Background3D theme={theme} />
           </div>
 
-          {/* UI Layer: pointer-events-none allows galaxy hover to work */}
-          <div className="relative z-10 w-full pointer-events-none">
+          <div className="relative z-10 w-full">
             <OverlayUI theme={theme} setTheme={setTheme} />
           </div>
         </div>
@@ -44,3 +43,4 @@ export default function App() {
     </>
   );
 }
+
