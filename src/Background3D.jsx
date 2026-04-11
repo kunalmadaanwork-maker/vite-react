@@ -1,5 +1,5 @@
-import React, { useRef, useMemo, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { useRef, useMemo, Suspense, useEffect } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { PerspectiveCamera, Float, MeshTransmissionMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import gsap from 'gsap';
@@ -8,7 +8,7 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ─── Quality Detection ───────────────────────────────────────────────────────
+// ─── Quality Detection ────────────────────────────────────────────────────────
 const getQualityTier = () => {
   const memory = navigator.deviceMemory || 4;
   const cores = navigator.hardwareConcurrency || 4;
@@ -18,7 +18,14 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── Galaxy Core ─────────────────────────────────────────────────────────────
+// ─── Scene Background — forces canvas bg to match theme (fixes light mode) ───
+const SceneBackground = ({ isDark }) => {
+  const { scene } = useThree();
+  useEffect(() => {
+    scene.background = new THREE.Color(isDark ? '#030303' : '#FFF8E7');
+  }, [isDark, scene]);
+  return null;
+};
 const GalaxyCore = ({ isDark, quality }) => {
   const pointsRef = useRef();
 
@@ -350,6 +357,114 @@ const RocketCamera = () => {
   );
 };
 
+// ─── Hero Glow — fills the black void behind the hero card ───────────────────
+// Camera starts at z=15, hero card is at z=0, so we need rich visuals at z=-2 to z=-18
+const HeroGlow = ({ isDark }) => {
+  const ref1 = useRef();
+  const ref2 = useRef();
+  const ref3 = useRef();
+
+  // Dense particle halo surrounding the hero zone
+  const haloPositions = useMemo(() => {
+    const count = 1200;
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      // Ring/halo shape — particles around the edges, not center
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 12 + Math.random() * 20; // hollow center so card is visible
+      const spread = (Math.random() - 0.5) * 8;
+      pos[i * 3]     = Math.cos(angle) * radius + spread;
+      pos[i * 3 + 1] = Math.sin(angle) * radius * 0.6 + spread * 0.5;
+      pos[i * 3 + 2] = -3 - Math.random() * 12;
+    }
+    return pos;
+  }, []);
+
+  // Soft floating wisps — large semi-transparent planes with additive blending
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (ref1.current) {
+      ref1.current.rotation.z = t * 0.04;
+      ref1.current.material.opacity = 0.12 + Math.sin(t * 0.5) * 0.04;
+    }
+    if (ref2.current) {
+      ref2.current.rotation.z = -t * 0.03;
+      ref2.current.material.opacity = 0.10 + Math.sin(t * 0.7 + 1) * 0.03;
+    }
+    if (ref3.current) {
+      ref3.current.rotation.z = t * 0.025;
+      ref3.current.material.opacity = 0.08 + Math.sin(t * 0.4 + 2) * 0.02;
+    }
+  });
+
+  return (
+    <group>
+      {/* Particle halo ring around hero */}
+      <points>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={1200} array={haloPositions} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.18}
+          color={isDark ? '#A855F7' : '#8B5CF6'}
+          transparent
+          opacity={0.65}
+          sizeAttenuation
+          depthWrite={false}
+        />
+      </points>
+
+      {/* Large soft violet glow — left side */}
+      <mesh ref={ref1} position={[-18, 6, -10]}>
+        <circleGeometry args={[20, 32]} />
+        <meshBasicMaterial
+          color={isDark ? '#7C3AED' : '#8B5CF6'}
+          transparent
+          opacity={0.12}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+
+      {/* Large soft fuchsia glow — right side */}
+      <mesh ref={ref2} position={[20, -4, -8]}>
+        <circleGeometry args={[18, 32]} />
+        <meshBasicMaterial
+          color={isDark ? '#C026D3' : '#A21CAF'}
+          transparent
+          opacity={0.10}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+
+      {/* Deep blue glow — bottom */}
+      <mesh ref={ref3} position={[0, -16, -12]}>
+        <circleGeometry args={[22, 32]} />
+        <meshBasicMaterial
+          color={isDark ? '#1D4ED8' : '#3730A3'}
+          transparent
+          opacity={0.08}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+
+      {/* Bright core accent — dead center, very subtle */}
+      <mesh position={[0, 0, -6]}>
+        <circleGeometry args={[8, 32]} />
+        <meshBasicMaterial
+          color={isDark ? '#A78BFA' : '#7C3AED'}
+          transparent
+          opacity={isDark ? 0.06 : 0.04}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+    </group>
+  );
+};
+
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export default function Background3D({ theme }) {
   const isDark = theme === 'dark';
@@ -361,18 +476,19 @@ export default function Background3D({ theme }) {
       gl={{ antialias: quality !== 'low', powerPreference: 'high-performance', alpha: false }}
     >
       <Suspense fallback={null}>
-        {/* FIX: Fog starts further away so nearby particles are visible */}
+        <SceneBackground isDark={isDark} />
         <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 20, 140]} />
 
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
-        <pointLight position={[0, 0, 10]}   intensity={isDark ? 4 : 2}   color={isDark ? '#C084FC' : '#7C3AED'} />
-        <pointLight position={[-20, 10, -50]} intensity={isDark ? 2 : 1}   color={isDark ? '#FB923C' : '#D97706'} />
+        <pointLight position={[0, 0, 10]}    intensity={isDark ? 4 : 2}     color={isDark ? '#C084FC' : '#7C3AED'} />
+        <pointLight position={[-20, 10, -50]} intensity={isDark ? 2 : 1}     color={isDark ? '#FB923C' : '#D97706'} />
         <pointLight position={[15, -5, -85]}  intensity={isDark ? 1.5 : 0.8} color={isDark ? '#2DD4BF' : '#0D9488'} />
 
         <RocketCamera />
-        <GalaxyCore    isDark={isDark} quality={quality} />
-        <NebulaClouds  isDark={isDark} quality={quality} />
-        <SpaceObjects  isDark={isDark} quality={quality} />
+        <HeroGlow     isDark={isDark} />
+        <GalaxyCore   isDark={isDark} quality={quality} />
+        <NebulaClouds isDark={isDark} quality={quality} />
+        <SpaceObjects isDark={isDark} quality={quality} />
       </Suspense>
     </Canvas>
   );
