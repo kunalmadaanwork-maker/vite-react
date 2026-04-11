@@ -23,30 +23,42 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── COSMIC VEINS: Long streaks of light that fix the "Void" feeling ───
-const CosmicVeins = ({ isDark }) => {
-  const veins = useMemo(() => {
-    const data = [];
-    for (let i = 0; i < 12; i++) {
-      data.push({
-        pos: [(Math.random() - 0.5) * 60, (Math.random() - 0.5) * 60, 0],
-        color: isDark ? (Math.random() > 0.5 ? '#7C3AED' : '#2DD4BF') : '#94A3B8',
-        rot: [Math.random() * Math.PI, Math.random() * Math.PI, 0],
-        scale: [0.1, 0.1, 150], // Very long, thin needles
-      });
+// ─── THE WARP TUNNEL: The primary fix for the "Void" ───
+// This creates a continuous cylinder of stars that the camera travels through.
+const WarpTunnel = ({ isDark, quality }) => {
+  const count = quality === 'high' ? 20000 : 10000;
+  const points = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const z = Math.random() * -250 + 20; // Spans the entire journey
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 20 + Math.random() * 40; // Large radius to encompass the view
+      
+      pos[i * 3] = Math.cos(angle) * radius;
+      pos[i * 3 + 1] = Math.sin(angle) * radius;
+      pos[i * 3 + 2] = z;
+
+      const color = new THREE.Color();
+      color.set(isDark ? (Math.random() > 0.9 ? '#C084FC' : '#ffffff') : '#94A3B8');
+      col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
     }
-    return data;
-  }, [isDark]);
+    return { pos, col };
+  }, [quality, isDark]);
+
+  const ref = useRef();
+  useFrame((state) => {
+    if (ref.current) ref.current.rotation.z += 0.0005; // Subtle constant rotation
+  });
 
   return (
-    <group>
-      {veins.map((v, i) => (
-        <mesh key={i} position={v.pos} rotation={v.rot} scale={v.scale}>
-          <cylinderGeometry args={[0.02, 0.02, 1]} />
-          <meshBasicMaterial color={v.color} transparent opacity={0.15} blending={THREE.AdditiveBlending} />
-        </mesh>
-      ))}
-    </group>
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={count} array={points.pos} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={count} array={points.col} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial size={0.05} vertexColors transparent opacity={0.4} sizeAttenuation depthWrite={false} />
+    </points>
   );
 };
 
@@ -150,18 +162,19 @@ const GalaxyCore = ({ isDark, quality }) => {
   );
 };
 
-const NebulaCloud = ({ position, color, scale }) => {
+// ─── VOLUMETRIC NEBULA: Massive overlapping curtains of light ───
+const NebulaWall = ({ position, color, scale }) => {
   const ref = useRef();
   useFrame((state) => {
     if (ref.current) {
-      ref.current.rotation.y += 0.002;
-      ref.current.rotation.z += 0.001;
+      ref.current.rotation.y += 0.001;
+      ref.current.rotation.x += 0.001;
     }
   });
   return (
     <mesh ref={ref} position={position} scale={scale}>
       <icosahedronGeometry args={[1, 4]} />
-      <MeshDistortMaterial distort={0.6} speed={2} radius={1} color={color} transparent opacity={0.1} />
+      <MeshDistortMaterial distort={0.7} speed={1.5} radius={1} color={color} transparent opacity={0.12} />
     </mesh>
   );
 };
@@ -174,7 +187,7 @@ const AsteroidBelt = ({ position, color }) => {
       const angle = Math.random() * Math.PI * 2;
       const radius = 15 + Math.random() * 10;
       pos[i * 3] = Math.cos(angle) * radius;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 4;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 6;
       pos[i * 3 + 2] = Math.sin(angle) * radius;
     }
     return pos;
@@ -257,31 +270,31 @@ export default function Background3D({ theme }) {
     <Canvas dpr={quality === 'high' ? [1, 2] : [1, 1]} gl={{ antialias: true, powerPreference: 'high-performance' }}>
       <Suspense fallback={null}>
         <color attach="background" args={[isDark ? '#030303' : '#FFF8E7']} />
-        {/* TIGHTENED FOG: Creates a more seamless transition between assets */}
-        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 180]} />
+        <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 10, 200]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
         
-        {/* GLOBAL CONNECTORS: Always visible to remove the "nothingness" */}
-        <CosmicVeins isDark={isDark} />
+        {/* THE CONSTANT: Warp Tunnel fixes the void */}
+        <WarpTunnel isDark={isDark} quality={quality} />
+        
         <RocketCamera />
         <HeroGlow isDark={isDark} />
         
-        {/* BEAT 1: Hero Cluster */}
+        {/* ZONE 1: Hero */}
         <GalaxyCore isDark={isDark} quality={quality} />
 
-        {/* BEAT 2: AI Journey Cluster - Moved closer to core to avoid gap */}
-        <NebulaCloud position={[-20, 5, -40]} scale={[30, 15, 20]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
-        <AsteroidBelt position={[0, 0, -55]} color={isDark ? '#C084FC' : '#A78BFA'} />
+        {/* ZONE 2: AI Journey - OVERLAPPING the core */}
+        <NebulaWall position={[-10, 0, -40]} scale={[40, 40, 40]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
+        <AsteroidBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} />
 
-        {/* BEAT 3: Horizon Transition - Adding a "bridge" nebula here */}
-        <NebulaCloud position={[10, 0, -80]} scale={[40, 20, 30]} color={isDark ? '#3B82F6' : '#BFDBFE'} />
+        {/* ZONE 3: Horizon - Now a massive bridge nebula instead of a gap */}
+        <NebulaWall position={[0, 0, -80]} scale={[60, 60, 60]} color={isDark ? '#3B82F6' : '#BFDBFE'} />
 
-        {/* BEAT 4: Built With AI Cluster */}
-        <NebulaCloud position={[20, -10, -100]} scale={[30, 15, 20]} color={isDark ? '#0D9488' : '#CCFBF1'} />
-        <AsteroidBelt position={[0, 0, -115]} color={isDark ? '#2DD4BF' : '#0D9488'} />
+        {/* ZONE 4: Built With AI - Overlapping the bridge */}
+        <NebulaWall position={[10, 0, -100]} scale={[40, 40, 40]} color={isDark ? '#0D9488' : '#CCFBF1'} />
+        <AsteroidBelt position={[0, 0, -120]} color={isDark ? '#2DD4BF' : '#0D9488'} />
 
-        {/* BEAT 5: Finale */}
+        {/* ZONE 5: Finale */}
         <SpaceObjects isDark={isDark} />
       </Suspense>
     </Canvas>
