@@ -23,73 +23,26 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── WARP VORTEX: Continuous spiraling particles that fix the "nothingness" ───
-const WarpVortex = ({ isDark, quality }) => {
-  const count = quality === 'high' ? 15000 : 7000;
+// ─── SUBTLE BACKGROUND: The "Glue" that prevents a total black screen ───
+const BackgroundDust = ({ isDark }) => {
   const points = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const col = new Float32Array(count * 3);
-    
-    for (let i = 0; i < count; i++) {
-      // Spread particles along the entire journey
-      const z = Math.random() * -200 + 20;
-      const angle = Math.random() * Math.PI * 2;
-      // Radius increases as we go deeper to create a "funnel" effect
-      const radius = Math.random() * (Math.abs(z) * 0.5 + 10);
-      
-      pos[i * 3] = Math.cos(angle) * radius;
-      pos[i * 3 + 1] = Math.sin(angle) * radius;
-      pos[i * 3 + 2] = z;
-
-      const color = new THREE.Color();
-      color.set(isDark ? (Math.random() > 0.8 ? '#C084FC' : '#ffffff') : '#94A3B8');
-      col[i * 3] = color.r; col[i * 3 + 1] = color.g; col[i * 3 + 2] = color.b;
-    }
-    return { pos, col };
-  }, [quality, isDark]);
-
-  const pointsRef = useRef();
-  useFrame((state) => {
-    if (pointsRef.current) {
-      pointsRef.current.rotation.z += 0.001; // Slow vortex spin
-    }
-  });
-
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={points.pos} itemSize={3} />
-        <bufferAttribute attach="attributes-color" count={count} array={points.col} itemSize={3} />
-      </bufferGeometry>
-      <pointsMaterial size={0.06} vertexColors transparent opacity={0.4} sizeAttenuation depthWrite={false} />
-    </points>
-  );
-};
-
-// ─── STARDUST BELT: Large rings the user flies through at intervals ───
-const StardustBelt = ({ position, color, isDark }) => {
-  const count = 2000;
-  const points = useMemo(() => {
+    const count = 4000;
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 15 + Math.random() * 10;
-      pos[i * 3] = Math.cos(angle) * radius;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 5;
-      pos[i * 3 + 2] = Math.sin(angle) * radius;
+      pos[i * 3] = (Math.random() - 0.5) * 200;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 200;
+      pos[i * 3 + 2] = Math.random() * -200 + 20;
     }
     return pos;
   }, []);
 
   return (
-    <group position={position}>
-      <points>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" count={count} array={points} itemSize={3} />
-        </bufferGeometry>
-        <pointsMaterial size={0.08} color={color} transparent opacity={0.3} sizeAttenuation depthWrite={false} />
-      </points>
-    </group>
+    <points>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={points.length / 3} array={points} itemSize={3} />
+      </bufferGeometry>
+      <pointsMaterial size={0.04} color={isDark ? '#ffffff' : '#94A3B8'} transparent opacity={0.2} sizeAttenuation />
+    </points>
   );
 };
 
@@ -193,7 +146,7 @@ const GalaxyCore = ({ isDark, quality }) => {
   );
 };
 
-const NebulaCloud = ({ position, color, scale, isDark }) => {
+const NebulaCloud = ({ position, color, scale }) => {
   const ref = useRef();
   useFrame((state) => {
     if (ref.current) {
@@ -209,45 +162,36 @@ const NebulaCloud = ({ position, color, scale, isDark }) => {
   );
 };
 
-const NebulaSystem = ({ isDark, quality }) => {
-  return (
-    <group>
-      <NebulaCloud position={[-20, 5, -30]} scale={[20, 10, 15]} color={isDark ? '#7C3AED' : '#DDD6FE'} isDark={isDark} />
-      <NebulaCloud position={[20, -5, -50]} scale={[15, 15, 10]} color={isDark ? '#D97706' : '#FDE68A'} isDark={isDark} />
-      <NebulaCloud position={[-10, 10, -70]} scale={[25, 10, 20]} color={isDark ? '#0D9488' : '#CCFBF1'} isDark={isDark} />
-      <NebulaCloud position={[25, 0, -90]} scale={[15, 20, 15]} color={isDark ? '#C026D3' : '#F5D0FE'} isDark={isDark} />
-      <NebulaCloud position={[-20, -10, -110]} scale={[20, 12, 18]} color={isDark ? '#3B82F6' : '#BFDBFE'} isDark={isDark} />
-      <NebulaCloud position={[0, 5, -130]} scale={[35, 20, 30]} color={isDark ? '#A78BFA' : '#DDD6FE'} isDark={isDark} />
-    </group>
-  );
-};
-
-const SpaceObjects = ({ isDark, quality }) => {
-  const clusterPositions = useMemo(() => {
-    const count = 400; const pos = new Float32Array(count * 3);
+const AsteroidBelt = ({ position, color }) => {
+  const count = 1500;
+  const points = useMemo(() => {
+    const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = Math.random() * 2.5;
-      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i * 3 + 2] = r * Math.cos(phi);
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 15 + Math.random() * 10;
+      pos[i * 3] = Math.cos(angle) * radius;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 4;
+      pos[i * 3 + 2] = Math.sin(angle) * radius;
     }
     return pos;
   }, []);
 
   return (
-    <group>
-      <Float position={[10, 3, -28]} speed={1.2} floatIntensity={0.6}>
-        <points>
-          <bufferGeometry>
-            <bufferAttribute attach="attributes-position" count={400} array={clusterPositions} itemSize={3} />
-          </bufferGeometry>
-          <pointsMaterial size={0.12} color={isDark ? '#FFC857' : '#F59E0B'} transparent opacity={0.9} sizeAttenuation depthWrite={false} />
-        </points>
-      </Float>
+    <group position={position}>
+      <points>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={count} array={points} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial size={0.08} color={color} transparent opacity={0.3} sizeAttenuation depthWrite={false} />
+      </points>
+    </group>
+  );
+};
 
-      {/* FINAL DESTINATION: Huge bright core for Contact Section */}
+const SpaceObjects = ({ isDark }) => {
+  return (
+    <group>
+      {/* Final Destination: The Light at the end of the tunnel */}
       <Float position={[0, 0, -140]} speed={2} floatIntensity={1}>
         <mesh>
           <icosahedronGeometry args={[10, 4]} />
@@ -313,19 +257,26 @@ export default function Background3D({ theme }) {
         <fog attach="fog" args={[isDark ? '#030303' : '#FFF8E7', 20, 250]} />
         <ambientLight intensity={isDark ? 0.3 : 0.9} />
         <pointLight position={[0, 0, 10]} intensity={isDark ? 4 : 2} color={isDark ? '#C084FC' : '#7C3AED'} />
-        <pointLight position={[-20, 10, -50]} intensity={isDark ? 2 : 1} color={isDark ? '#FB923C' : '#D97706'} />
-        <pointLight position={[15, -5, -85]} intensity={isDark ? 1.5 : 0.8} color={isDark ? '#2DD4BF' : '#0D9488'} />
         
-        <WarpVortex isDark={isDark} quality={quality} />
+        <BackgroundDust isDark={isDark} />
         <RocketCamera />
         <HeroGlow isDark={isDark} />
-        <GalaxyCore isDark={isDark} quality={quality} />
-        <NebulaSystem isDark={isDark} quality={quality} />
-        <SpaceObjects isDark={isDark} quality={quality} />
         
-        {/* The Belts that break the void */}
-        <StardustBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} isDark={isDark} />
-        <StardustBelt position={[0, 0, -110]} color={isDark ? '#2DD4BF' : '#0D9488'} isDark={isDark} />
+        {/* BEAT 1: High Density Start */}
+        <GalaxyCore isDark={isDark} quality={quality} />
+
+        {/* BEAT 2: First Feature Zone (AI Journey) */}
+        <NebulaCloud position={[-20, 5, -45]} scale={[20, 10, 15]} color={isDark ? '#7C3AED' : '#DDD6FE'} />
+        <AsteroidBelt position={[0, 0, -60]} color={isDark ? '#C084FC' : '#A78BFA'} />
+
+        {/* BEAT 3: THE VOID (Horizon) - No assets here, just BackgroundDust and Camera Movement */}
+
+        {/* BEAT 4: Second Feature Zone (Built With AI) */}
+        <NebulaCloud position={[20, -10, -100]} scale={[25, 15, 20]} color={isDark ? '#0D9488' : '#CCFBF1'} />
+        <AsteroidBelt position={[0, 0, -120]} color={isDark ? '#2DD4BF' : '#0D9488'} />
+
+        {/* BEAT 5: Dense Finale (Contact) */}
+        <SpaceObjects isDark={isDark} />
       </Suspense>
     </Canvas>
   );
