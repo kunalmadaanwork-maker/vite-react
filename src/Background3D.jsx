@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, Suspense } from 'react';
+import React, { useRef, useMemo, Suspense, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { 
   PerspectiveCamera, 
@@ -23,15 +23,16 @@ const getQualityTier = () => {
   return 'high';
 };
 
-// ─── GLOBAL STARFIELD: Fixes the "blank screen" in deep scroll ───
-const GlobalStarfield = ({ isDark }) => {
-  const stars = useMemo(() => {
-    const count = 5000;
+// ─── COSMIC STREAM: Continuous particles from start to finish ───
+const CosmicStream = ({ isDark, quality }) => {
+  const count = quality === 'high' ? 10000 : 5000;
+  const points = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 200;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 200;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 300 - 50; // Spread deep into space
+      // Spread particles along the entire Z journey (-150 to 15)
+      pos[i * 3] = (Math.random() - 0.5) * 100;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 100;
+      pos[i * 3 + 2] = Math.random() * -160 + 15;
     }
     return pos;
   }, []);
@@ -39,13 +40,13 @@ const GlobalStarfield = ({ isDark }) => {
   return (
     <points>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={stars.length / 3} array={stars} itemSize={3} />
+        <bufferAttribute attach="attributes-position" count={count} array={points} itemSize={3} />
       </bufferGeometry>
       <pointsMaterial 
-        size={0.1} 
-        color={isDark ? '#FFFFFF' : '#94A3B8'} 
+        size={0.05} 
+        color={isDark ? '#ffffff' : '#94A3B8'} 
         transparent 
-        opacity={0.4} 
+        opacity={0.3} 
         sizeAttenuation 
       />
     </points>
@@ -57,6 +58,19 @@ const GalaxyCore = ({ isDark, quality }) => {
   const originalPositions = useRef(null);
   const currentPositions = useRef(null);
   const velocities = useRef(null);
+  
+  // GLOBAL MOUSE REF: This is the fix for the pointer-events-none issue
+  const mouseGlobal = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      // Normalize mouse to -1 to +1
+      mouseGlobal.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseGlobal.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener('mousemove', handleMove);
+    return () => window.removeEventListener('mousemove', handleMove);
+  }, []);
 
   const { count, positions, colors } = useMemo(() => {
     const tierCounts = { low: 3000, mid: 8000, high: 15000 };
@@ -99,11 +113,9 @@ const GalaxyCore = ({ isDark, quality }) => {
     const curr = currentPositions.current;
     const vel = velocities.current;
 
-    // FIX: Interaction Plane
-    // We project the mouse to a plane that stays 20 units in front of the camera
-    const planeZ = state.camera.position.z - 20;
-    const mouseX = state.pointer.x * 60; 
-    const mouseY = state.pointer.y * 30;
+    // FIX: Map Global Mouse to World Scale
+    const mouseX = mouseGlobal.current.x * 60; 
+    const mouseY = mouseGlobal.current.y * 30;
 
     const influenceRadius = quality === 'high' ? 15 : 10;
     const springStrength = 0.03;
@@ -112,18 +124,14 @@ const GalaxyCore = ({ isDark, quality }) => {
 
     for (let i = 0; i < count; i++) {
       const ix = i * 3, iy = i * 3 + 1, iz = i * 3 + 2;
-      
-      // Calculate distance relative to camera-relative mouse coordinates
       const dx = curr[ix] - mouseX;
       const dy = curr[iy] - mouseY;
-      const dz = curr[iz] - planeZ;
-      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      const dist2D = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < influenceRadius && dist > 0.1) {
-        const force = (influenceRadius - dist) / influenceRadius;
-        vel[ix] += (dx / dist) * force * repelStrength;
-        vel[iy] += (dy / dist) * force * repelStrength;
-        vel[iz] += (dz / dist) * force * repelStrength;
+      if (dist2D < influenceRadius && dist2D > 0.1) {
+        const force = (influenceRadius - dist2D) / influenceRadius;
+        vel[ix] += (dx / dist2D) * force * repelStrength;
+        vel[iy] += (dy / dist2D) * force * repelStrength;
       }
 
       vel[ix] *= drag; vel[iy] *= drag; vel[iz] *= drag;
@@ -149,37 +157,38 @@ const GalaxyCore = ({ isDark, quality }) => {
   );
 };
 
-const NebulaClouds = ({ isDark, quality }) => {
-  const ref1 = useRef();
-  const ref2 = useRef();
-  const ref3 = useRef();
-
+// ─── NEBULA CHAIN: Distorted clouds placed at every interval ───
+const NebulaCloud = ({ position, color, scale, isDark }) => {
+  const ref = useRef();
   useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    if (ref1.current) ref1.current.rotation.y = t * 0.04;
-    if (ref2.current) ref2.current.rotation.x = -t * 0.025;
-    if (ref3.current) ref3.current.rotation.z = t * 0.015;
+    if (ref.current) {
+      ref.current.rotation.y += 0.002;
+      ref.current.rotation.z += 0.001;
+    }
   });
 
   return (
-    <>
-      <mesh ref={ref1} position={[-18, 4, -35]} scale={[1.5, 0.8, 1.2]}>
-        <icosahedronGeometry args={[16, 4]} />
-        <MeshDistortMaterial distort={0.4} speed={2} radius={1} color={isDark ? '#7C3AED' : '#DDD6FE'} transparent opacity={0.12} />
-      </mesh>
-      {quality !== 'low' && (
-        <mesh ref={ref2} position={[22, -6, -65]} scale={[1.2, 1.4, 0.9]}>
-          <icosahedronGeometry args={[20, 4]} />
-          <MeshDistortMaterial distort={0.5} speed={1.5} radius={1} color={isDark ? '#D97706' : '#FDE68A'} transparent opacity={0.10} />
-        </mesh>
-      )}
-      {quality !== 'low' && (
-        <mesh ref={ref3} position={[0, 8, -95]} scale={[1.8, 0.7, 1.3]}>
-          <icosahedronGeometry args={[22, 4]} />
-          <MeshDistortMaterial distort={0.3} speed={2.5} radius={1} color={isDark ? '#0D9488' : '#CCFBF1'} transparent opacity={0.08} />
-        </mesh>
-      )}
-    </>
+    <mesh ref={ref} position={position} scale={scale}>
+      <icosahedronGeometry args={[1, 4]} />
+      <MeshDistortMaterial 
+        distort={0.5} speed={2} radius={1} 
+        color={color} transparent opacity={0.08} 
+      />
+    </mesh>
+  );
+};
+
+const NebulaSystem = ({ isDark, quality }) => {
+  return (
+    <group>
+      {/* We place them in a chain from Z = -30 to -130 */}
+      <NebulaCloud position={[-20, 5, -30]} scale={[20, 10, 15]} color={isDark ? '#7C3AED' : '#DDD6FE'} isDark={isDark} />
+      <NebulaCloud position={[20, -5, -50]} scale={[15, 15, 10]} color={isDark ? '#D97706' : '#FDE68A'} isDark={isDark} />
+      <NebulaCloud position={[-10, 10, -70]} scale={[25, 10, 20]} color={isDark ? '#0D9488' : '#CCFBF1'} isDark={isDark} />
+      <NebulaCloud position={[25, 0, -90]} scale={[15, 20, 15]} color={isDark ? '#C026D3' : '#F5D0FE'} isDark={isDark} />
+      <NebulaCloud position={[-20, -10, -110]} scale={[20, 12, 18]} color={isDark ? '#3B82F6' : '#BFDBFE'} isDark={isDark} />
+      <NebulaCloud position={[0, 5, -130]} scale={[30, 15, 25]} color={isDark ? '#A78BFA' : '#DDD6FE'} isDark={isDark} />
+    </group>
   );
 };
 
@@ -197,19 +206,6 @@ const SpaceObjects = ({ isDark, quality }) => {
     return pos;
   }, []);
 
-  const ribbonPositions = useMemo(() => {
-    const count = 600; const pos = new Float32Array(count * 3);
-    const R = 10, r = 2.5;
-    for (let i = 0; i < count; i++) {
-      const u = Math.random() * Math.PI * 2;
-      const v = Math.random() * Math.PI * 2;
-      pos[i * 3] = (R + r * Math.cos(v)) * Math.cos(u);
-      pos[i * 3 + 1] = (R + r * Math.cos(v)) * Math.sin(u);
-      pos[i * 3 + 2] = r * Math.sin(v);
-    }
-    return pos;
-  }, []);
-
   return (
     <group>
       <Float position={[10, 3, -28]} speed={1.2} floatIntensity={0.6}>
@@ -221,14 +217,7 @@ const SpaceObjects = ({ isDark, quality }) => {
         </points>
       </Float>
 
-      <points position={[-14, 0, -58]} rotation={[Math.PI / 2.5, 0, 0]}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" count={600} array={ribbonPositions} itemSize={3} />
-        </bufferGeometry>
-        <pointsMaterial size={0.07} color={isDark ? '#818CF8' : '#6366F1'} transparent opacity={0.45} sizeAttenuation depthWrite={false} />
-      </points>
-
-      {/* FINAL DESTINATION: High-visibility core for contact section */}
+      {/* FINAL DESTINATION: Becomes very bright as user reaches the end */}
       <Float position={[0, 0, -140]} speed={2} floatIntensity={1}>
         <mesh>
           <icosahedronGeometry args={[8, 4]} />
@@ -237,7 +226,7 @@ const SpaceObjects = ({ isDark, quality }) => {
             color={isDark ? '#C084FC' : '#A78BFA'} transparent opacity={0.5}
           />
         </mesh>
-        <pointLight intensity={15} color="#C084FC" distance={50} />
+        <pointLight intensity={20} color="#C084FC" distance={60} />
       </Float>
     </group>
   );
@@ -250,7 +239,6 @@ const RocketCamera = () => {
     const tl = gsap.timeline({
       scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 2 },
     });
-    // extended the journey to -145 to ensure we fly THROUGH the final core
     tl.to(cameraRef.current.position, { z: -145, x: 0, y: 0, ease: 'none' }, 0)
       .to(cameraRef.current.rotation, { z: 0.05, ease: 'none' }, 0)
       .to(cameraRef.current.rotation, { z: -0.05, ease: 'none' }, 0.5)
@@ -306,11 +294,11 @@ export default function Background3D({ theme }) {
         <pointLight position={[-20, 10, -50]} intensity={isDark ? 2 : 1} color={isDark ? '#FB923C' : '#D97706'} />
         <pointLight position={[15, -5, -85]} intensity={isDark ? 1.5 : 0.8} color={isDark ? '#2DD4BF' : '#0D9488'} />
         
-        <GlobalStarfield isDark={isDark} />
+        <CosmicStream isDark={isDark} quality={quality} />
         <RocketCamera />
         <HeroGlow isDark={isDark} />
         <GalaxyCore isDark={isDark} quality={quality} />
-        <NebulaClouds isDark={isDark} quality={quality} />
+        <NebulaSystem isDark={isDark} quality={quality} />
         <SpaceObjects isDark={isDark} quality={quality} />
       </Suspense>
     </Canvas>
